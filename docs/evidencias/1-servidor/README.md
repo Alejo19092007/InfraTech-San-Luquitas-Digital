@@ -158,9 +158,37 @@ sudo sshd -T | grep -Ei "permitrootlogin|passwordauthentication|pubkeyauthentica
 | `ssh sladmin@192.168.1.50` con llave | Entra sin pedir contraseña | `25-ssh-llave-tras-endurecimiento.png` |
 | `ssh -o PubkeyAuthentication=no sladmin@192.168.1.50` | `Permission denied (publickey)` sin ofrecer contraseña | `26-ssh-rechaza-password.png` |
 
+## 7. Reinicio y persistencia de la configuración
+
+```bash
+sudo reboot                     # requerido por la actualización del kernel
+ssh sladmin@192.168.1.50        # 27-ssh-tras-reinicio.png
+ip -br a show enp0s3 && timedatectl | grep "Time zone" && sudo sshd -T | grep passwordauthentication
+```
+`28-verificacion-tras-reinicio.png`: tras el arranque se mantienen la IP fija `192.168.1.50/24` (cloud-init ya no regenera la red), la zona horaria y `passwordauthentication no`.
+
+## 8. Firewall UFW — `29-ufw-reglas-lan.png`
+
+Política de mínimo privilegio: se bloquea todo el tráfico entrante y solo se abren los puertos de administración y web, **únicamente para la red local** del colegio. La regla del puerto 22 se crea **antes** de activar UFW para no perder la sesión SSH.
+```bash
+sudo ufw default deny incoming     # todo lo que entra se bloquea
+sudo ufw default allow outgoing    # el servidor puede salir (actualizaciones, Docker Hub)
+sudo ufw allow from 192.168.1.0/24 to any port 22  proto tcp comment 'SSH LAN'
+sudo ufw allow from 192.168.1.0/24 to any port 80  proto tcp comment 'HTTP LAN'
+sudo ufw allow from 192.168.1.0/24 to any port 443 proto tcp comment 'HTTPS LAN'
+sudo ufw enable                    # activo y persistente al arranque
+sudo ufw status verbose
+```
+| Puerto | Servicio | Origen permitido |
+|---|---|---|
+| 22/tcp | SSH (administración) | `192.168.1.0/24` |
+| 80/tcp | HTTP (redirige a HTTPS) | `192.168.1.0/24` |
+| 443/tcp | HTTPS (Moodle y Portal vía Nginx) | `192.168.1.0/24` |
+| Cualquier otro (5432 PostgreSQL, 6379 Redis…) | — | Bloqueado |
+
+> **Pendiente con Docker:** Docker escribe sus propias reglas de iptables y puede publicar puertos saltándose UFW. Se documenta la mitigación en la sección de Docker.
+
 ## Pendiente
-- [ ] Reinicio por actualización del kernel y verificación de IP fija tras el arranque
-- [ ] UFW (22/80/443 solo desde `192.168.1.0/24`)
-- [ ] Docker Engine + Compose desde el repositorio oficial
+- [ ] Docker Engine + Compose desde el repositorio oficial, y mitigación Docker/UFW
 - [ ] Nginx (Moodle y Portal por HTTPS)
 - [ ] Pruebas: acceso desde otro dispositivo, reinicio, `ss -tulpn` y `nmap`
