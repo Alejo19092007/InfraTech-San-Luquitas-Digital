@@ -276,6 +276,58 @@ sudo iptables -S DOCKER-USER
 
 Los contenedores de prueba se eliminan al terminar (`docker rm -f prueba-ufw prueba-80`).
 
+## 12. Nginx (reverse proxy HTTPS)
+
+Configuración en [`nginx/`](../../../nginx/) y decisiones de diseño en [`nginx/README.md`](../../../nginx/README.md).
+
+### Certificado autofirmado para la LAN — `39-nginx-certificado-y-validacion.png`
+```bash
+git clone -b alejandro-jimenez/servidor-red-seguridad https://github.com/Alejo19092007/InfraTech-San-Luquitas-Digital.git ~/sanluquitas
+
+# Un solo certificado válido para los dos nombres (SAN), 825 días
+openssl req -x509 -nodes -newkey rsa:2048 -days 825 \
+  -keyout ~/sanluquitas/nginx/certs/sanluquitas.key \
+  -out    ~/sanluquitas/nginx/certs/sanluquitas.crt \
+  -subj "/C=CO/O=Colegio San Luquitas/CN=sanluquitas.local" \
+  -addext "subjectAltName=DNS:moodle.sanluquitas.local,DNS:portal.sanluquitas.local"
+chmod 600 ~/sanluquitas/nginx/certs/sanluquitas.key   # la llave privada no se sube al repositorio
+
+# Validación con la imagen real (los nombres de PHP-FPM se simulan con --add-host)
+docker run --rm --add-host moodle:127.0.0.1 --add-host laravel-app:127.0.0.1 \
+  -v ~/sanluquitas/nginx/conf.d:/etc/nginx/conf.d:ro -v ~/sanluquitas/nginx/certs:/etc/nginx/certs:ro \
+  nginx:1.27-alpine nginx -t     # syntax is ok / test is successful
+```
+
+### Prueba de funcionamiento — `41-nginx-https-portal-502.png`
+```bash
+docker run -d --name prueba-nginx -p 80:80 -p 443:443 \
+  --add-host moodle:127.0.0.1 --add-host laravel-app:127.0.0.1 \
+  -v ~/sanluquitas/nginx/conf.d:/etc/nginx/conf.d:ro -v ~/sanluquitas/nginx/certs:/etc/nginx/certs:ro \
+  nginx:1.27-alpine
+```
+`http://portal.sanluquitas.local` redirige a `https://`, el navegador avisa del certificado autofirmado y Nginx responde **502 Bad Gateway**: el proxy, TLS y los nombres funcionan; el 502 indica solo que aún no existe el contenedor de Laravel. El contenedor de prueba se elimina después; el servicio definitivo lo levanta `compose.yaml`.
+
+## 13. Resolución de nombres en la LAN
+
+No hay servidor DNS en el colegio, así que cada cliente asocia los nombres a la IP del servidor:
+
+| Sistema | Archivo / método | Línea a agregar |
+|---|---|---|
+| **Windows** (PowerShell como administrador) | `C:\Windows\System32\drivers\etc\hosts` | `192.168.1.50 moodle.sanluquitas.local portal.sanluquitas.local` |
+| **Linux / macOS** | `sudo nano /etc/hosts` | igual |
+| **Android** | El archivo `hosts` requiere root. Alternativas: configurar el DNS del router (abajo) o, para la demo, una app de DNS local (p. ej. "Virtual Hosts") | — |
+| **Router (recomendado)** | Sección DNS local / *Static DNS* / *Host mapping* del router, si la ofrece | `moodle.sanluquitas.local` y `portal.sanluquitas.local` → `192.168.1.50` |
+
+Windows — `40-hosts-windows-y-ping.png`:
+```powershell
+Add-Content -Path "$env:windir\System32\drivers\etc\hosts" -Value "192.168.1.50 moodle.sanluquitas.local portal.sanluquitas.local"
+ipconfig /flushdns
+ping portal.sanluquitas.local     # responde 192.168.1.50
+```
+Con el DNS del router todos los dispositivos (incluidos celulares) resuelven los nombres sin tocar cada equipo.
+
 ## Pendiente
-- [ ] Nginx (Moodle y Portal por HTTPS)
-- [ ] Pruebas: acceso desde otro dispositivo, reinicio (incluida la persistencia de `DOCKER-USER`), `ss -tulpn` y `nmap`
+- [ ] Levantar el stack completo con `compose.yaml` (Alejandro Moreno) y verificar Moodle y Portal reales
+- [ ] Pruebas: acceso desde otro dispositivo (celular), reinicio con todos los contenedores, `ss -tulpn` y `nmap`
+- [ ] Exportar `.ova` y `docs/INSTRUCCIONES_OVA.md`
+- [ ] Diapositivas y guion de la sustentación
