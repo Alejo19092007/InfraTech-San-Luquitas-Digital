@@ -273,6 +273,7 @@ sudo iptables -S DOCKER-USER
 | `http://192.168.1.50:8080` con la regla activa | `ERR_CONNECTION_TIMED_OUT`; 39 paquetes contados en `DROP` | `35-docker-user-contadores.png`, `36-docker-8080-bloqueado.png` |
 | `docker run -d --name prueba-80 -p 80:80 nginx:alpine` → `http://192.168.1.50` | Carga normalmente desde la LAN | `37-docker-puerto-80-permitido-lan.png` |
 | `sudo iptables -S DOCKER-USER` | Reglas cargadas | `38-docker-user-reglas.png` |
+| `sudo reboot` → `sudo iptables -S DOCKER-USER` | Las 5 reglas se cargan solas al arrancar (UFW las aplica desde `after.rules`) | `42-docker-user-tras-reinicio.png` |
 
 Los contenedores de prueba se eliminan al terminar (`docker rm -f prueba-ufw prueba-80`).
 
