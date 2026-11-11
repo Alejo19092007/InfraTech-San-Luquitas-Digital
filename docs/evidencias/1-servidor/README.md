@@ -8,7 +8,7 @@ Insumo para los apartados **8** (instalación del servidor), **5** (red y direcc
 | Parámetro | Valor |
 |---|---|
 | Hipervisor | Oracle VirtualBox |
-| Sistema operativo | Ubuntu Server 24.04.3 LTS (kernel 6.8) |
+| Sistema operativo | Ubuntu Server 24.04 LTS (instalado desde 24.04.3, actualizado a 24.04.5; kernel 6.8) |
 | Hostname | `sanluquitas-srv` |
 | Recursos | 2 vCPU · 4 GB RAM · disco de 40 GB (LVM, `/` = 37,99 GB) |
 | Red de la VM | Adaptador puente sobre la tarjeta Wi-Fi del anfitrión |
@@ -17,7 +17,7 @@ Insumo para los apartados **8** (instalación del servidor), **5** (red y direcc
 | Puerta de enlace | `192.168.1.1` |
 | DNS | `192.168.1.1`, `8.8.8.8` |
 | Zona horaria | `America/Bogota` (UTC-5), sincronizada por NTP |
-| Usuario administrador | `sladmin` (grupo `sudo`); acceso remoto por SSH |
+| Usuario administrador | `sladmin` (grupo `sudo`); SSH solo con llave pública |
 
 ## 1. Máquina virtual (VirtualBox)
 
@@ -97,9 +97,69 @@ ip a show enp0s3          # inet 192.168.1.50/24, sin "dynamic"
 ping -c 3 google.com      # salida a internet y DNS funcionando (0 % de pérdida)
 ```
 
+## 5. Actualización y herramientas base
+
+### Actualización completa — `20-apt-full-upgrade.png`
+```bash
+sudo apt update && sudo apt full-upgrade -y   # 77 paquetes; el sistema pasa a 24.04.5
+```
+
+### Herramientas — `21-instalacion-herramientas.png`, `22-paquetes-y-unattended-upgrades.png`
+```bash
+sudo apt install -y curl git htop ufw unattended-upgrades fail2ban
+dpkg -l curl git htop ufw unattended-upgrades fail2ban | grep ^ii   # verificación: 6 paquetes "ii"
+```
+| Paquete | Uso en el proyecto |
+|---|---|
+| `curl` | Descargas y pruebas HTTP (instalación de Docker, pruebas a Nginx) |
+| `git` | Clonar el repositorio del proyecto en el servidor |
+| `htop` | Monitoreo de CPU y memoria |
+| `ufw` | Firewall del host |
+| `unattended-upgrades` | Parches de seguridad automáticos |
+| `fail2ban` | Bloqueo de IPs con intentos fallidos de autenticación |
+
+### Actualizaciones automáticas de seguridad — `22-paquetes-y-unattended-upgrades.png`
+```bash
+sudo dpkg-reconfigure -plow unattended-upgrades   # responder "Yes"
+cat /etc/apt/apt.conf.d/20auto-upgrades          # ambas directivas en "1"
+```
+
+## 6. Acceso SSH con llave pública y endurecimiento
+
+### Llave en el equipo cliente (Windows, PowerShell)
+```powershell
+ssh-keygen -t ed25519 -C "alejandro@sanluquitas"   # crea id_ed25519 (privada) e id_ed25519.pub (pública)
+
+# Copia la llave pública al servidor (equivalente a ssh-copy-id, que no existe en Windows)
+type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh sladmin@192.168.1.50 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+
+ssh sladmin@192.168.1.50   # entra sin contraseña — 23-ssh-con-llave-sin-password.png
+```
+La llave privada nunca sale del equipo cliente ni se sube al repositorio.
+
+### Endurecimiento de `sshd` — `24-ssh-endurecido-config.png`
+En Ubuntu 24.04, `/etc/ssh/sshd_config.d/50-cloud-init.conf` trae `PasswordAuthentication yes`. `sshd` usa el **primer** valor que encuentra y lee los archivos de `sshd_config.d/` en orden alfabético, por eso la configuración propia lleva el prefijo `10-` para tener prioridad:
+```bash
+sudo tee /etc/ssh/sshd_config.d/10-sanluquitas.conf > /dev/null << 'EOF'
+# Endurecimiento SSH - San Luquitas
+PermitRootLogin no               # root no puede entrar por SSH
+PasswordAuthentication no        # no se aceptan contraseñas
+KbdInteractiveAuthentication no  # ni autenticación interactiva
+PubkeyAuthentication yes         # solo llave pública
+EOF
+
+sudo sshd -t && sudo systemctl restart ssh   # valida la sintaxis y reinicia el servicio
+sudo sshd -T | grep -Ei "permitrootlogin|passwordauthentication|pubkeyauthentication"   # valores efectivos
+```
+
+### Pruebas desde otro equipo
+| Prueba | Resultado esperado | Evidencia |
+|---|---|---|
+| `ssh sladmin@192.168.1.50` con llave | Entra sin pedir contraseña | `25-ssh-llave-tras-endurecimiento.png` |
+| `ssh -o PubkeyAuthentication=no sladmin@192.168.1.50` | `Permission denied (publickey)` sin ofrecer contraseña | `26-ssh-rechaza-password.png` |
+
 ## Pendiente
-- [ ] `apt full-upgrade` e instalación de `curl git htop ufw unattended-upgrades fail2ban`
-- [ ] SSH con llave pública; `PermitRootLogin no`, `PasswordAuthentication no`
+- [ ] Reinicio por actualización del kernel y verificación de IP fija tras el arranque
 - [ ] UFW (22/80/443 solo desde `192.168.1.0/24`)
 - [ ] Docker Engine + Compose desde el repositorio oficial
 - [ ] Nginx (Moodle y Portal por HTTPS)
