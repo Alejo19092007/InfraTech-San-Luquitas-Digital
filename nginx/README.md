@@ -38,7 +38,7 @@ Todo lo demás que llegue por `enp0s3` hacia un contenedor se descarta. El tráf
 |---|---|---|
 | `./nginx/conf.d` | `/etc/nginx/conf.d` | `ro` |
 | `./nginx/certs` | `/etc/nginx/certs` | `ro` |
-| volumen `moodle_code` | `/var/www/moodle` | `ro` |
+| volumen `moodle_code` | `/var/www/moodle` | `ro` (Nginx sirve `/var/www/moodle/public`, ver Decisión 4) |
 | `./portal/public` | `/var/www/html/public` | `ro` |
 
 Las rutas de destino deben coincidir con las que usan los contenedores PHP-FPM (`moodle` en `/var/www/moodle`, `laravel-app` en `/var/www/html`), porque Nginx envía a FastCGI la ruta del script (`SCRIPT_FILENAME`) y PHP-FPM la busca en su propio sistema de archivos.
@@ -51,10 +51,52 @@ Las rutas de destino deben coincidir con las que usan los contenedores PHP-FPM (
 | Servicio Laravel (PHP-FPM) | `laravel-app:9000` |
 | Red compartida con Nginx | `frontend` |
 | Sitios | `moodle.sanluquitas.local`, `portal.sanluquitas.local` |
-| Webhook WhatsApp | `https://portal.sanluquitas.local/webhook/whatsapp` → Laravel (vía `cloudflared`) |
+| Webhook WhatsApp | `cloudflared` → `http://nginx:8081/webhook/whatsapp` → Laravel (ver Decisión 5) |
 | Imagen | `nginx:1.27-alpine` |
 
 Si alguno de estos nombres cambia en el compose, avisar para ajustar `nginx/conf.d/*.conf`.
+
+## Decisión 4 — Raíz web de Moodle
+
+Desde **Moodle 5.1** solo la carpeta `public/` se publica en el servidor web; `config.php`, `admin/`, `lib/` y el resto del código quedan fuera de la raíz web. Por eso `moodle.conf` usa `root /var/www/moodle/public;` y envía las rutas que no son archivos al router de Moodle (`r.php`).
+Si el equipo instala **Moodle 5.0**, se cambia esa línea a `root /var/www/moodle;` (Julian Godoy confirma la versión exacta).
+
+`client_max_body_size 100M` debe coincidir con `upload_max_filesize` y `post_max_size` del `php.ini` de Moodle.
+
+## Decisión 5 — Webhook de WhatsApp aislado en un puerto interno
+
+`cloudflared` no entra por el 443 público del portal. Nginx tiene un bloque aparte en el **puerto 8081**, que **no se publica** al host: solo es alcanzable dentro de la red Docker `frontend`. Ese bloque solo responde `/webhook/whatsapp` (GET de verificación y POST de eventos de Meta) y devuelve 404 para cualquier otra ruta.
+
+Así, lo único del sistema expuesto a internet es el webhook; el portal, el login y Moodle siguen siendo solo de la LAN.
+
+Configuración de ingreso del túnel (Samuel Guzmán): `service: http://nginx:8081`.
+
+## Archivos de esta carpeta
+
+| Archivo | Contenido |
+|---|---|
+| `conf.d/00-general.conf` | `server_tokens off`, tamaño máximo de subida, TLS 1.2/1.3, buffers de FastCGI |
+| `conf.d/includes/security-headers.inc` | Cabeceras `nosniff`, `SAMEORIGIN`, `Referrer-Policy`, `Permissions-Policy` |
+| `conf.d/10-default.conf` | Redirección 80 → 443 y cierre (444) de peticiones a nombres desconocidos |
+| `conf.d/moodle.conf` | `moodle.sanluquitas.local` → FastCGI `moodle:9000`, slash arguments, bloqueo de archivos internos |
+| `conf.d/portal.conf` | `portal.sanluquitas.local` → FastCGI `laravel-app:9000` (front controller de Laravel) |
+| `conf.d/webhook.conf` | Puerto interno 8081 solo para `/webhook/whatsapp` |
+| `certs/` | `sanluquitas.crt` y `sanluquitas.key` (autofirmados). **La llave no se sube**: `*.key` está en `.gitignore` |
+
+La imagen `nginx:1.27-alpine` incluye todos los `*.conf` de `/etc/nginx/conf.d`; el archivo `.inc` no se carga solo, se incluye en cada sitio.
+
+### Verificación de la configuración
+Probada con `nginx -t` y peticiones de prueba (sin PHP-FPM detrás, por eso el 502):
+
+| Petición | Resultado |
+|---|---|
+| `http://portal.sanluquitas.local/novedades` | `301` → `https://portal.sanluquitas.local/novedades` |
+| `https://<IP>/` (nombre desconocido) | Conexión cerrada (444) |
+| `https://portal.sanluquitas.local/` | `502` + cabeceras de seguridad, `Server: nginx` sin versión |
+| `https://moodle.sanluquitas.local/.git/config` | `403` |
+| `https://moodle.sanluquitas.local/composer.json` | `404` |
+| `http://nginx:8081/login` | `404` (el túnel solo ve el webhook) |
+| `http://nginx:8081/webhook/whatsapp` | Se envía a Laravel (`502` sin backend) |
 
 ## Al importar el `.ova` en otra red
 La regla de `DOCKER-USER` y las de UFW usan `192.168.1.0/24`. Si la red de destino es otra, se cambia esa subred en `/etc/ufw/after.rules` y en `ufw` (ver `docs/INSTRUCCIONES_OVA.md`). El `compose.yaml` no requiere cambios.
