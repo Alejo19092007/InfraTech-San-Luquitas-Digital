@@ -188,7 +188,46 @@ sudo ufw status verbose
 
 > **Pendiente con Docker:** Docker escribe sus propias reglas de iptables y puede publicar puertos saltándose UFW. Se documenta la mitigación en la sección de Docker.
 
+## 9. fail2ban — `30-fail2ban-y-repo-docker.png`
+
+```bash
+sudo systemctl enable --now fail2ban
+sudo fail2ban-client status sshd     # jail sshd activo: bloquea IPs tras intentos fallidos
+```
+
+## 10. Docker Engine y Compose (repositorio oficial)
+
+Se usa el repositorio oficial de Docker y **no** el paquete `docker.io` de Ubuntu ni el snap, para tener versiones actuales del motor y del plugin Compose.
+```bash
+# Llave GPG del repositorio
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Repositorio (formato deb822); Suites toma el nombre de la versión: noble
+sudo tee /etc/apt/sources.list.d/docker.sources > /dev/null << EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+Components: stable
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+sudo systemctl enable --now docker   # arranca con el sistema
+sudo usermod -aG docker sladmin      # usar docker sin sudo (requiere cerrar y abrir sesión)
+```
+| Evidencia | Resultado |
+|---|---|
+| `31-docker-servicio-y-grupo.png` | Servicio habilitado y `sladmin` agregado al grupo `docker` |
+| `32-docker-y-compose-version.png` | Docker 29.9.3 · Compose v5.7.1 · `enabled` · `active` |
+| `33-docker-hello-world.png` | `docker run --rm hello-world` sin `sudo`: el motor descarga la imagen y ejecuta el contenedor |
+
+> Nota de seguridad: pertenecer al grupo `docker` equivale a tener privilegios de root en el host. Por eso solo `sladmin` está en ese grupo.
+
 ## Pendiente
-- [ ] Docker Engine + Compose desde el repositorio oficial, y mitigación Docker/UFW
+- [ ] Mitigación Docker/UFW (puertos publicados) — coordinar con Alejandro Moreno
 - [ ] Nginx (Moodle y Portal por HTTPS)
 - [ ] Pruebas: acceso desde otro dispositivo, reinicio, `ss -tulpn` y `nmap`
