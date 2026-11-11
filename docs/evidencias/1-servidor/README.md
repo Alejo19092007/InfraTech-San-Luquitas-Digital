@@ -227,7 +227,55 @@ sudo usermod -aG docker sladmin      # usar docker sin sudo (requiere cerrar y a
 
 > Nota de seguridad: pertenecer al grupo `docker` equivale a tener privilegios de root en el host. Por eso solo `sladmin` está en ese grupo.
 
+## 11. Docker y UFW: filtro en la cadena `DOCKER-USER`
+
+**Problema.** Docker publica puertos con reglas propias de iptables (NAT y cadena `FORWARD`) que se evalúan antes que UFW. Un puerto publicado queda abierto aunque UFW no lo permita.
+
+**Demostración del problema** — `34-docker-salta-ufw-puerto-8080.png`
+```bash
+docker run -d --name prueba-ufw -p 8080:80 nginx:alpine
+# Desde Windows: http://192.168.1.50:8080 → "Welcome to nginx!" aunque UFW no permite el 8080
+```
+
+**Solución.** Docker crea la cadena `DOCKER-USER` y la evalúa antes de sus propias reglas. Se definen ahí las reglas en `/etc/ufw/after.rules`, para que UFW las cargue al arrancar y con cada `ufw reload`. Decisión de diseño acordada con el `compose.yaml` en [`nginx/README.md`](../../../nginx/README.md).
+```bash
+sudo cp /etc/ufw/after.rules /etc/ufw/after.rules.bak
+
+sudo tee -a /etc/ufw/after.rules > /dev/null << 'EOF'
+
+# BEGIN San Luquitas - filtro de puertos publicados por Docker
+*filter
+:DOCKER-USER - [0:0]
+-A DOCKER-USER -i enp0s3 -m conntrack --ctstate RELATED,ESTABLISHED -j RETURN
+-A DOCKER-USER -i enp0s3 -s 192.168.1.0/24 -p tcp -m conntrack --ctorigdstport 80 -j RETURN
+-A DOCKER-USER -i enp0s3 -s 192.168.1.0/24 -p tcp -m conntrack --ctorigdstport 443 -j RETURN
+-A DOCKER-USER -i enp0s3 -j DROP
+-A DOCKER-USER -j RETURN
+COMMIT
+# END San Luquitas
+EOF
+
+sudo ufw reload
+sudo iptables -S DOCKER-USER
+```
+| Regla | Función |
+|---|---|
+| `RELATED,ESTABLISHED` | Deja pasar las respuestas al tráfico que los contenedores inician hacia internet |
+| `--ctorigdstport 80` / `443` desde `192.168.1.0/24` | Solo la LAN puede abrir conexiones nuevas a la web (Nginx) |
+| `-i enp0s3 -j DROP` | Cualquier otra conexión que llegue de fuera hacia un contenedor se descarta |
+| `-j RETURN` final | El tráfico entre contenedores y redes internas no se altera |
+
+`--ctorigdstport` compara con el puerto **original** al que se conectó el cliente (el del host), antes de que Docker lo traduzca al puerto del contenedor.
+
+**Verificación**
+| Prueba | Resultado | Evidencia |
+|---|---|---|
+| `http://192.168.1.50:8080` con la regla activa | `ERR_CONNECTION_TIMED_OUT`; 39 paquetes contados en `DROP` | `35-docker-user-contadores.png`, `36-docker-8080-bloqueado.png` |
+| `docker run -d --name prueba-80 -p 80:80 nginx:alpine` → `http://192.168.1.50` | Carga normalmente desde la LAN | `37-docker-puerto-80-permitido-lan.png` |
+| `sudo iptables -S DOCKER-USER` | Reglas cargadas | `38-docker-user-reglas.png` |
+
+Los contenedores de prueba se eliminan al terminar (`docker rm -f prueba-ufw prueba-80`).
+
 ## Pendiente
-- [ ] Mitigación Docker/UFW (puertos publicados) — coordinar con Alejandro Moreno
 - [ ] Nginx (Moodle y Portal por HTTPS)
-- [ ] Pruebas: acceso desde otro dispositivo, reinicio, `ss -tulpn` y `nmap`
+- [ ] Pruebas: acceso desde otro dispositivo, reinicio (incluida la persistencia de `DOCKER-USER`), `ss -tulpn` y `nmap`
