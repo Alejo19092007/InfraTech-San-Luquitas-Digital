@@ -1,0 +1,126 @@
+%% Arquitectura de infraestructura - IE San Luquitas Digital
+%% Modalidad contenerizada: "monolito estructurado" en un solo compose.yaml
+flowchart LR
+    %% ---------- Usuarios ----------
+    subgraph LAN["Red local del colegio (LAN 192.168.1.0/24)"]
+        direction TB
+        NAV_ADMIN["Navegador: Administrador"]
+        NAV_DOC["Navegador: Docente"]
+        NAV_EST["Navegador: Estudiantes"]
+    end
+
+    subgraph MOVILES["Teléfonos con WhatsApp"]
+        direction TB
+        TEL["Estudiante / Acudiente / Profesor<br/>Sin internet: el mensaje queda en la cola local<br/>y se envía al reconectar"]
+    end
+
+    %% ---------- Internet ----------
+    subgraph INTERNET["Internet (conexión intermitente)"]
+        direction TB
+        META["Meta WhatsApp Cloud API<br/>reintenta el webhook hasta ~7 días"]
+        CF["Cloudflare Edge<br/>HTTPS público"]
+    end
+
+    %% ---------- Servidor ----------
+    subgraph VM["VM Ubuntu Server 24.04 LTS (VirtualBox, exportable .ova)"]
+        direction LR
+        UFW{{"UFW: deny incoming<br/>permite 22 y 80/443 solo desde la LAN"}}
+
+        subgraph DOCKER["Docker Engine + compose.yaml"]
+            direction LR
+
+            subgraph NET_FRONT["red: frontend"]
+                direction TB
+                NGINX["nginx:1.27-alpine<br/>:80 / :443 publicados<br/>moodle.sanluquitas.local<br/>portal.sanluquitas.local"]
+                CFD["cloudflared<br/>túnel saliente (sin abrir puertos)"]
+            end
+
+            subgraph APPS["Aplicaciones PHP-FPM 8.3"]
+                direction TB
+                MOODLE["moodle<br/>Moodle 5.x · PHP-FPM :9000"]
+                MCRON["moodle-cron<br/>admin/cli/cron.php"]
+                LARAVEL["laravel-app<br/>Laravel 12 · PHP-FPM :9000<br/>Portal + login por roles + panel /tareas<br/>POST /webhook/whatsapp"]
+                WORKER["queue-worker<br/>queue:work redis<br/>colas whatsapp-in, whatsapp-out"]
+                SCHED["scheduler<br/>schedule:work<br/>recordatorios y limpieza de códigos"]
+            end
+
+            subgraph NET_BACK["red: backend (internal: true, sin salida a internet)"]
+                direction TB
+                PG[("postgres:16-alpine<br/>:5432 NO publicado<br/>moodle_db / moodle_user<br/>laravel_db / laravel_user")]
+                REDIS[("redis:7-alpine<br/>:6379 NO publicado · AOF<br/>colas + caché + sesiones")]
+            end
+
+            subgraph VOLS["Volúmenes con nombre (persistencia)"]
+                direction TB
+                V_PG[/"pg_data"/]
+                V_REDIS[/"redis_data"/]
+                V_MCODE[/"moodle_code"/]
+                V_MDATA[/"moodledata"/]
+                V_LSTO[/"laravel_storage"/]
+            end
+        end
+
+        subgraph BACKUP["Respaldo"]
+            direction TB
+            CRON["cron 02:00 → scripts/backup.sh<br/>pg_dump por BD + tar de volúmenes<br/>+ .env / config.php cifrados"]
+            BK[/"/srv/backups/AAAA-MM-DD<br/>retención 7 días"/]
+        end
+    end
+
+    USB[("Disco externo / USB<br/>copia fuera del servidor")]
+
+    %% ---------- Tráfico web en la LAN ----------
+    NAV_ADMIN & NAV_DOC & NAV_EST -->|HTTP/HTTPS| UFW
+    UFW --> NGINX
+    NGINX -->|FastCGI| MOODLE
+    NGINX -->|FastCGI| LARAVEL
+    LARAVEL -. "enlace a Moodle" .-> MOODLE
+
+    %% ---------- Flujo del bot de WhatsApp ----------
+    TEL -->|"1. mensaje: TAREA / VINCULAR / MIS TAREAS"| META
+    META -->|"2. webhook HTTPS"| CF
+    CF -->|túnel| CFD
+    CFD --> NGINX
+    LARAVEL -->|"3. verifica firma y encola job"| REDIS
+    REDIS -->|"4. toma el job"| WORKER
+    WORKER -->|"5. identifica el número en users y valida la vinculación<br/>6. guarda la tarea"| PG
+    WORKER -->|"7. respuesta con reintentos (whatsapp-out)"| META
+    META -->|confirmación| TEL
+
+    %% ---------- Datos ----------
+    MOODLE -->|moodle_user| PG
+    MCRON --> PG
+    LARAVEL -->|laravel_user| PG
+    LARAVEL -->|sesiones / caché| REDIS
+    SCHED --> REDIS
+    SCHED --> PG
+
+    %% ---------- Persistencia ----------
+    PG -.-> V_PG
+    REDIS -.-> V_REDIS
+    MOODLE -.-> V_MCODE
+    MOODLE -.-> V_MDATA
+    MCRON -.-> V_MDATA
+    LARAVEL -.-> V_LSTO
+    WORKER -.-> V_LSTO
+
+    %% ---------- Respaldo ----------
+    CRON -.->|pg_dump| PG
+    CRON -.->|tar| V_MDATA
+    CRON -.->|tar| V_LSTO
+    CRON --> BK
+    BK -->|copia 3-2-1| USB
+
+    %% ---------- Estilos ----------
+    classDef ext fill:#fde68a,stroke:#b45309,color:#000
+    classDef web fill:#bfdbfe,stroke:#1d4ed8,color:#000
+    classDef app fill:#bbf7d0,stroke:#15803d,color:#000
+    classDef data fill:#e9d5ff,stroke:#7e22ce,color:#000
+    classDef vol fill:#f3f4f6,stroke:#6b7280,color:#000
+    classDef sec fill:#fecaca,stroke:#b91c1c,color:#000
+    class META,CF,TEL ext
+    class NGINX,CFD web
+    class MOODLE,MCRON,LARAVEL,WORKER,SCHED app
+    class PG,REDIS data
+    class V_PG,V_REDIS,V_MCODE,V_MDATA,V_LSTO,BK,USB vol
+    class UFW,CRON sec

@@ -1,0 +1,31 @@
+# Secretos (nunca al repo; usar .env.example)
+.env
+.env.*
+!.env.example
+**/config.php.local
+*.key
+*.pem
+
+# Respaldos y máquina virtual
+backups/
+*.sql
+*.dump
+*.tar.gz
+*.gpg
+*.age
+*.ova
+*.vdi
+*.vmdk
+
+# Laravel
+portal/vendor/
+portal/node_modules/
+portal/storage/*.key
+portal/public/hot
+portal/public/build/
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
