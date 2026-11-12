@@ -1,0 +1,200 @@
+# ============================================================================
+#  San Luquitas Digital — Moodle + Portal Laravel + bot de WhatsApp
+#  "Monolito estructurado": todo el sistema en un solo compose, un servicio por
+#  responsabilidad. Uso:  cp .env.example .env  (y cambiar contraseñas)
+#                         docker compose up -d --build
+#
+#  Perfiles opcionales (se activan con COMPOSE_PROFILES en el .env):
+#    moodle  → servicios moodle y moodle-cron (aporta Julian Godoy, carpeta moodle/)
+#    tunnel  → cloudflared (aporta Samuel Guzmán; requiere CLOUDFLARE_TUNNEL_TOKEN)
+# ============================================================================
+
+name: sanluquitas
+
+# Configuración común de las 3 réplicas de la imagen del Portal
+x-laravel: &laravel
+  build:
+    context: ./portal
+  image: sanluquitas/portal:1.0
+  environment: &laravel-env
+    APP_NAME: ${APP_NAME}
+    APP_ENV: ${APP_ENV}
+    APP_KEY: ${APP_KEY}
+    APP_DEBUG: ${APP_DEBUG}
+    APP_URL: ${APP_URL}
+    APP_LOCALE: es
+    APP_FALLBACK_LOCALE: es
+    APP_FAKER_LOCALE: es_ES
+    LOG_CHANNEL: stderr          # los logs se ven con: docker compose logs
+    LOG_LEVEL: ${LOG_LEVEL}
+    MOODLE_URL: ${MOODLE_URL}
+    PORTAL_EDICION_ABIERTA: ${PORTAL_EDICION_ABIERTA}
+    SESSION_SECURE_COOKIE: "true"     # la cookie de sesión solo viaja por HTTPS
+    DB_CONNECTION: pgsql
+    DB_HOST: postgres
+    DB_PORT: "5432"
+    DB_DATABASE: laravel_db
+    DB_USERNAME: laravel_user
+    DB_PASSWORD: ${LARAVEL_DB_PASSWORD}
+    REDIS_CLIENT: phpredis
+    REDIS_HOST: redis
+    REDIS_PORT: "6379"
+    REDIS_PASSWORD: ${REDIS_PASSWORD}
+    QUEUE_CONNECTION: redis
+    CACHE_STORE: redis
+    SESSION_DRIVER: redis
+  volumes:
+    - laravel_storage:/var/www/html/storage
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+services:
+  # --------------------------------------------------------------------------
+  # Proxy inverso: ÚNICO servicio con puertos publicados (ver nginx/README.md).
+  # El firewall del host filtra estos puertos en la cadena DOCKER-USER.
+  # --------------------------------------------------------------------------
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - moodle_code:/var/www/moodle:ro
+      - ./portal/public:/var/www/html/public:ro
+    networks: [frontend]
+    depends_on:
+      laravel-app:
+        condition: service_started
+
+  # --------------------------------------------------------------------------
+  # Portal institucional (Laravel 12 sobre PHP-FPM 8.3)
+  # --------------------------------------------------------------------------
+  laravel-app:
+    <<: *laravel
+    environment:
+      <<: *laravel-env
+      CONTAINER_ROLE: app            # el entrypoint migra la BD y cachea la config
+    networks: [frontend, backend, egress]
+
+  # Procesa las colas de Redis (whatsapp-in, whatsapp-out, default)
+  queue-worker:
+    <<: *laravel
+    command: ["php", "artisan", "queue:work", "redis", "--queue=whatsapp-in,whatsapp-out,default", "--sleep=3", "--tries=5", "--backoff=10,60,300", "--max-time=3600"]
+    environment:
+      <<: *laravel-env
+      CONTAINER_ROLE: worker
+    networks: [backend, egress]   # egress: llamadas a la API de Meta
+
+  # Tareas programadas de Laravel (equivale al cron)
+  scheduler:
+    <<: *laravel
+    command: ["php", "artisan", "schedule:work"]
+    environment:
+      <<: *laravel-env
+      CONTAINER_ROLE: scheduler
+    networks: [backend]
+
+  # --------------------------------------------------------------------------
+  # Datos: sin puertos publicados, solo accesibles en la red interna "backend"
+  # --------------------------------------------------------------------------
+  postgres:
+    image: postgres:16.16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_SUPERUSER}
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
+      POSTGRES_DB: postgres
+      MOODLE_DB_PASSWORD: ${MOODLE_DB_PASSWORD}     # leídas por postgres/init/01-init.sh
+      LARAVEL_DB_PASSWORD: ${LARAVEL_DB_PASSWORD}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  redis:
+    image: redis:7.4.12-alpine
+    restart: unless-stopped
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--requirepass", "${REDIS_PASSWORD}"]
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD}   # para que redis-cli (healthcheck) se autentique
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks: [backend]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --------------------------------------------------------------------------
+  # Moodle (Julian Godoy) — se activa con el perfil "moodle"
+  # --------------------------------------------------------------------------
+  moodle:
+    profiles: [moodle]
+    build:
+      context: ./moodle
+    image: sanluquitas/moodle:1.0
+    restart: unless-stopped
+    volumes:
+      - moodle_code:/var/www/moodle
+      - moodledata:/var/www/moodledata
+    networks: [frontend, backend]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  moodle-cron:
+    profiles: [moodle]
+    image: sanluquitas/moodle:1.0
+    restart: unless-stopped
+    command: ["sh", "-c", "while true; do php /var/www/moodle/admin/cli/cron.php; sleep 60; done"]
+    volumes:
+      - moodle_code:/var/www/moodle
+      - moodledata:/var/www/moodledata
+    networks: [backend]
+    depends_on:
+      moodle:
+        condition: service_started
+
+  # --------------------------------------------------------------------------
+  # Túnel de Cloudflare para el webhook de WhatsApp (Samuel Guzmán)
+  # Solo llega a http://nginx:8081/webhook/whatsapp (ver nginx/conf.d/webhook.conf)
+  # --------------------------------------------------------------------------
+  cloudflared:
+    profiles: [tunnel]
+    image: cloudflare/cloudflared:2026.11.0
+    restart: unless-stopped
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+    networks: [frontend, egress]
+    depends_on:
+      nginx:
+        condition: service_started
+
+networks:
+  frontend:            # Nginx ↔ PHP-FPM y cloudflared
+  backend:
+    internal: true     # apps ↔ PostgreSQL y Redis, sin salida a internet
+  egress:              # salida a internet solo para quien la necesita
+
+volumes:
+  pg_data:
+  redis_data:
+  moodle_code:
+  moodledata:
+  laravel_storage:
