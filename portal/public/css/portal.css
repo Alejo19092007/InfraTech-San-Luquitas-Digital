@@ -1,0 +1,12 @@
+/* Estilos propios del Portal San Luquitas (complementan Bootstrap 5) */
+:root { --sl-verde: #1f6f4a; --sl-verde-claro: #e8f3ed; --sl-amarillo: #f2b705; }
+body { background: #f6f8f7; }
+.navbar-sl { background: var(--sl-verde); }
+.navbar-sl .nav-link, .navbar-sl .navbar-brand { color: #fff; }
+.navbar-sl .nav-link:hover, .navbar-sl .nav-link.active { color: var(--sl-amarillo); }
+.btn-moodle { background: var(--sl-amarillo); color: #222; font-weight: 600; }
+.btn-moodle:hover { background: #d9a404; color: #222; }
+.hero { background: linear-gradient(135deg, var(--sl-verde), #2e8b5f); color: #fff; border-radius: 1rem; }
+.etiqueta { background: var(--sl-verde-claro); color: var(--sl-verde); font-weight: 600; }
+.card { border: 0; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+footer { color: #6b7570; }
