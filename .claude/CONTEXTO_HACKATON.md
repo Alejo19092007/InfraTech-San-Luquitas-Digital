@@ -13,7 +13,7 @@
   1. **Moodle** → LMS "San Luquitas Digital" con el curso "Mis primeros pasos en programación".
   2. **Laravel** → "Portal Institucional San Luquitas", **obligatoriamente en Docker**.
 - **Valor agregado del equipo:** **bot de WhatsApp** para que estudiantes, acudientes y profesores registren tareas pendientes, aunque no tengan internet en ese momento. Los mensajes pasan por una **cola Redis** y se guardan en la BD del Portal, que tiene un **panel visual de tareas**.
-- **Stack elegido:** Ubuntu Server 24.04 LTS · Docker + Docker Compose (todo contenerizado, "monolito estructurado") · Nginx · PHP-FPM 8.3 · Moodle 5.x · Laravel 12 · PostgreSQL 16 · Redis 7 · WhatsApp Cloud API (Meta) · Cloudflare Tunnel.
+- **Stack elegido:** Ubuntu Server 24.04 LTS · Docker + Docker Compose (todo contenerizado, "monolito estructurado") · Nginx · PHP-FPM 8.3 · Moodle 5.x · Laravel 12 · PostgreSQL 16 · Redis 7 · WhatsApp Cloud API (Meta) · ngrok (túnel para el webhook).
 - **Reglas de oro:**
   1. Solo **datos ficticios**. Nunca datos reales de menores.
   2. **Nunca** commitear secretos (`.env`, tokens de Meta, contraseñas). Solo `.env.example`.
@@ -146,7 +146,7 @@ Estudiantes, acudientes (padres) y profesores le escriben a un número de WhatsA
 1. El usuario escribe al bot **aunque su teléfono no tenga internet**. WhatsApp deja el mensaje en la cola local del teléfono (aparece con el ícono del reloj).
 2. Cuando el teléfono recupera la conexión, WhatsApp entrega el mensaje a los servidores de Meta.
 3. Meta envía el mensaje al **webhook** del colegio. Si el servidor del colegio tampoco tiene internet en ese momento, **Meta reintenta la entrega durante un tiempo (hasta ~7 días)**.
-4. El webhook entra al servidor por **Cloudflare Tunnel**. El contenedor `cloudflared` abre una conexión saliente, así que no hay que abrir puertos en el router ni tener IP pública.
+4. El webhook entra al servidor por un **túnel de ngrok**. El contenedor `ngrok` abre una conexión saliente, así que no hay que abrir puertos en el router ni tener IP pública. Se usa el **dominio fijo gratuito** de la cuenta de ngrok para que la URL registrada en Meta no cambie al reiniciar. El túnel apunta a `http://nginx:8081`, que solo expone `/webhook/whatsapp`.
 5. Laravel valida la firma, guarda el mensaje "crudo" y lo **encola en Redis**. Responde `200 OK` de inmediato para que Meta no reintente.
 6. El contenedor `queue-worker` procesa la cola: identifica al usuario, interpreta el mensaje y crea la tarea en PostgreSQL.
 7. La respuesta de confirmación también se encola (`whatsapp-out`) con **reintentos y espera progresiva (backoff)**. Si el colegio pierde internet, se envía cuando vuelva.
@@ -229,9 +229,9 @@ Se implementa con **Policies** de Laravel y un middleware de rol.
 
 ### 7.7 Componentes relacionados
 
-`laravel-app` (webhook + panel), `queue-worker` (`php artisan queue:work redis --queue=whatsapp-in,whatsapp-out`), `scheduler` (`php artisan schedule:work`: recordatorios y limpieza de códigos vencidos), `redis`, `cloudflared`.
+`laravel-app` (webhook + panel), `queue-worker` (`php artisan queue:work redis --queue=whatsapp-in,whatsapp-out`), `scheduler` (`php artisan schedule:work`: recordatorios y limpieza de códigos vencidos), `redis`, `ngrok`.
 
-Variables en `.env` (**nunca en el repo**): `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `CLOUDFLARE_TUNNEL_TOKEN`.
+Variables en `.env` (**nunca en el repo**): `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `NGROK_AUTHTOKEN`, `NGROK_DOMAIN`.
 
 > Para el laboratorio se usa el **número de prueba** que Meta da en la app de desarrollador, con números destinatarios ficticios o del equipo autorizados en la consola de Meta.
 
@@ -251,11 +251,11 @@ Diagrama completo: [`docs/arquitectura-infraestructura.mermaid`](../docs/arquite
 | `scheduler` | misma imagen que `laravel-app` | — | — | backend | `laravel_storage` |
 | `postgres` | `postgres:16-alpine` | 5432 | — (**no publicado**) | backend | `pg_data` |
 | `redis` | `redis:7-alpine` (AOF activado, con contraseña) | 6379 | — (**no publicado**) | backend | `redis_data` |
-| `cloudflared` | `cloudflare/cloudflared` | — | — | frontend, egress | — |
+| `ngrok` | `ngrok/ngrok` (versión fija) | — | — | frontend, egress | — |
 
 - **Hosts (LAN):** `moodle.sanluquitas.local` y `portal.sanluquitas.local` → IP del servidor (en el `/etc/hosts` de los clientes o en el DNS del router).
 - **Redes Docker:**
-  - `frontend`: Nginx ↔ PHP-FPM y `cloudflared`.
+  - `frontend`: Nginx ↔ PHP-FPM y `ngrok`.
   - `backend` (`internal: true`): apps ↔ PostgreSQL y Redis, sin salida a internet.
   - `egress`: salida a internet solo para los contenedores que la necesitan (llamadas a la API de Meta y túnel).
 - **PostgreSQL:** un solo contenedor con dos BD lógicas. Un script `postgres/init/01-init.sql` crea `moodle_db`/`moodle_user` y `laravel_db`/`laravel_user`, y revoca a cada usuario el acceso a la BD que no es suya.
@@ -384,7 +384,7 @@ Criterios: eficiencia, consumo de recursos, seguridad, facilidad de administraci
 | Despliegue Laravel | Docker Compose (app + worker + scheduler) | Un solo contenedor con supervisord | Un proceso por contenedor: logs y reinicios independientes |
 | Cola | Redis 7 | Cola en BD (`database` driver) | Más rápido, no carga PostgreSQL, sirve también para caché y sesiones |
 | WhatsApp | Cloud API oficial (Meta) | Evolution API (Baileys, no oficial) | Oficial y estable, Meta reintenta webhooks; a cambio exige cuenta de Meta y HTTPS público (lo resuelve el túnel) |
-| Exposición del webhook | Cloudflare Tunnel | IP pública + abrir puertos / ngrok | Sin IP pública ni puertos abiertos; gratis; HTTPS automático |
+| Exposición del webhook | ngrok (dominio fijo gratuito) | Cloudflare Tunnel / IP pública + abrir puertos | Sin IP pública ni puertos abiertos y con HTTPS automático. Cloudflare Tunnel exige un dominio propio para tener una URL estable; ngrok da un dominio fijo gratis, suficiente para el laboratorio (el plan gratuito limita el tráfico mensual) |
 | Almacenamiento | Volúmenes Docker con nombre | Bind mounts | Gestionados por Docker y portables; bind mounts dependen de rutas del host |
 | Respaldo | `pg_dump` + tar + cron + copia externa | Snapshots de la VM | Restauración granular por aplicación; el snapshot no sirve para recuperar un solo registro |
 | Conectividad | LAN + DNS local; internet opcional | Nube pública | Funciona sin internet; solo el bot necesita internet de forma intermitente |
@@ -398,6 +398,7 @@ Cada integrante **agrega una fila** cada vez que la IA aporte algo importante:
 | Herramienta | Prompt empleado | Resultado obtenido | Validación técnica | Ajustes realizados | Uso final |
 |---|---|---|---|---|---|
 | Claude Code | "Crear .md de contexto de la hackathon + diagrama mermaid de la infraestructura" | Este archivo y `docs/arquitectura-infraestructura.mermaid` | Revisión del equipo contra el enunciado | Se agregó el flujo de login y vinculación del bot | Documentación / arquitectura |
+| Claude Code | "Empieza el intérprete de comandos del bot; el túnel será con ngrok; guarda evidencias" | Clases en `portal/app/Bot/` (comandos y fechas), 18 pruebas unitarias y evidencias en `docs/evidencias/4-bot/` | PHPUnit 11.5: 18 pruebas en verde (en PHP 8.5 local; falta repetir en el contenedor con PHP 8.3) | Se cambió Cloudflare Tunnel por ngrok en el contexto y el diagrama | Código Laravel (bot) / documentación |
 | | | | | | |
 
 Nunca introducir contraseñas, tokens ni datos personales reales en la IA.

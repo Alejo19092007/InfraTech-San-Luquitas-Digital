@@ -18,7 +18,7 @@ flowchart LR
     subgraph INTERNET["Internet (conexión intermitente)"]
         direction TB
         META["Meta WhatsApp Cloud API<br/>reintenta el webhook hasta ~7 días"]
-        CF["Cloudflare Edge<br/>HTTPS público"]
+        CF["ngrok (borde en internet)<br/>HTTPS público con dominio fijo"]
     end
 
     %% ---------- Servidor ----------
@@ -32,7 +32,7 @@ flowchart LR
             subgraph NET_FRONT["red: frontend"]
                 direction TB
                 NGINX["nginx:1.27-alpine<br/>:80 / :443 publicados<br/>moodle.sanluquitas.local<br/>portal.sanluquitas.local"]
-                CFD["cloudflared<br/>túnel saliente (sin abrir puertos)"]
+                CFD["ngrok<br/>túnel saliente (sin abrir puertos)<br/>apunta a nginx:8081"]
             end
 
             subgraph APPS["Aplicaciones PHP-FPM 8.3"]
