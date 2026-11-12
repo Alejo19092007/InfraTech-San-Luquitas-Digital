@@ -31,7 +31,7 @@
 
 ### 1.4 Bot de WhatsApp (Cloud API de Meta)
 - [ ] Crear la app en Meta for Developers con el producto WhatsApp y el **número de prueba**. Autorizar los números del equipo como destinatarios.
-- [ ] Cloudflare Tunnel: crear el túnel, servicio `cloudflared` con `CLOUDFLARE_TUNNEL_TOKEN` (pasárselo a Alejandro Moreno para el compose) y apuntar el hostname público a `nginx` (coordinar la ruta con Alejandro Jimenez).
+- [ ] ngrok: crear la cuenta, reservar el dominio fijo gratuito y agregar el servicio `ngrok` con `NGROK_AUTHTOKEN` y `NGROK_DOMAIN` (pasárselos a Alejandro Moreno para el compose). El túnel apunta a `http://nginx:8081` (entrada del webhook que ya dejó Alejandro Jimenez).
 - [ ] `GET /webhook/whatsapp`: verificación de la suscripción (`hub.verify_token`, `hub.challenge`).
 - [ ] `POST /webhook/whatsapp`:
   - valida la firma `X-Hub-Signature-256` con `WHATSAPP_APP_SECRET`;
@@ -45,7 +45,7 @@
 - [ ] Comandos: `TAREA`, `TAREA @hijo`, `TAREA GRADO n`, `MIS TAREAS`, `HECHA <id>`, `VINCULAR <código>`, `AYUDA` (sección 7.5 del contexto).
 - [ ] Job `EnviarMensajeWhatsApp` (cola `whatsapp-out`): `$tries` y `backoff` progresivo para cuando no haya internet; registra el estado `enviado` o `fallido`.
 - [ ] `scheduler`: recordatorio diario de tareas próximas a vencer y limpieza de códigos vencidos.
-- [ ] Variables en `.env.example` (sin valores reales): `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `CLOUDFLARE_TUNNEL_TOKEN`.
+- [ ] Variables en `.env.example` (sin valores reales): `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `NGROK_AUTHTOKEN`, `NGROK_DOMAIN`.
 - [ ] Opcional: simulador local (`php artisan whatsapp:simular "+57300..." "TAREA ..."`) para la demo si falla internet en clase.
 
 ---
