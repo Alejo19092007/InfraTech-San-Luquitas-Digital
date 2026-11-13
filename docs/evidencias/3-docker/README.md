@@ -60,3 +60,44 @@ El aviso `'user' directive is ignored when FPM is not running as root` confirma 
 
 ### Portal en el navegador — `05-portal-inicio-https.png`
 `https://portal.sanluquitas.local` muestra la página de inicio con las últimas novedades leídas de PostgreSQL, el acceso a Moodle y los recursos. Bootstrap se sirve desde el propio servidor, así que la página carga aunque no haya internet.
+
+## 2. Pruebas
+
+### Prueba 1 — Registro desde la web y verificación en PostgreSQL
+| Paso | Evidencia |
+|---|---|
+| Novedades → "+ Nueva novedad" → Publicar: mensaje "Novedad publicada correctamente" (id 8) | `06-novedad-creada-desde-web.png` |
+| La fila existe en `laravel_db` | `07-novedad-verificada-en-psql.png` |
+```bash
+docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d laravel_db \
+  -c "SELECT id, titulo, categoria, created_at FROM novedades ORDER BY id DESC LIMIT 3;"'
+```
+
+### Prueba 2 — Bases de datos aisladas y Redis protegido — `08-bd-aisladas-y-redis-con-clave.png`
+```bash
+# Cada BD pertenece a su usuario; PUBLIC no tiene CONNECT
+docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d postgres -c "\l moodle_db" -c "\l laravel_db"'
+# Usuarios de aplicación sin privilegios de administración
+docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d postgres -c "\du"'
+# laravel_user intenta entrar a moodle_db → rechazado
+docker compose exec postgres sh -c 'PGPASSWORD="$LARAVEL_DB_PASSWORD" psql -h 127.0.0.1 -U laravel_user -d moodle_db -c "SELECT 1;"'
+# Redis sin contraseña → NOAUTH; con contraseña → PONG y AOF activo
+docker compose exec -e REDISCLI_AUTH= redis redis-cli ping
+docker compose exec redis redis-cli ping && docker compose exec redis redis-cli config get appendonly
+```
+| Verificación | Resultado |
+|---|---|
+| `moodle_db` / `laravel_db` | Dueños `moodle_user` / `laravel_user`, UTF8, acceso `=T` (solo TEMP) para PUBLIC |
+| `\du` | Solo `sl_admin` es superusuario; los usuarios de aplicación no tienen atributos |
+| `laravel_user` → `moodle_db` | `FATAL: permission denied for database "moodle_db"` — *User does not have CONNECT privilege* |
+| Redis sin clave | `NOAUTH Authentication required` |
+| Redis con clave | `PONG`, `appendonly yes` |
+
+### Prueba 3 — Persistencia y administración — `09-persistencia-down-up-y-restart.png`
+```bash
+docker compose down && docker compose up -d     # se destruyen y recrean contenedores y redes, NO los volúmenes
+docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d laravel_db -c "SELECT id, titulo FROM novedades WHERE id = 8;"'
+docker compose restart laravel-app && docker compose logs laravel-app --tail=5
+docker compose ps
+```
+La novedad id 8 sigue existiendo tras recrear todo: los datos viven en el volumen `pg_data`, no en el contenedor. El reinicio de `laravel-app` muestra el cierre ordenado de PHP-FPM y el arranque sin migraciones pendientes.
