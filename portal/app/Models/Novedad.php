@@ -17,4 +17,14 @@ class Novedad extends Model
     }
 
     public const CATEGORIAS = ['General', 'Académico', 'Eventos', 'Comunidad', 'Tecnología'];
+
+    // Color de la etiqueta en el diseño (clases .tag, .tag.green, .tag.earth)
+    public function claseEtiqueta(): string
+    {
+        return match ($this->categoria) {
+            'Académico', 'Tecnología' => 'tag green',
+            'Comunidad' => 'tag earth',
+            default => 'tag',
+        };
+    }
 }

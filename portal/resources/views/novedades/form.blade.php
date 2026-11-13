@@ -1,58 +1,66 @@
 @extends('layouts.app')
-@section('titulo', $novedad->exists ? 'Editar novedad' : 'Nueva novedad')
+@section('titulo', $novedad->exists ? 'Editar novedad' : 'Crear novedad')
 
 @section('contenido')
-<h1 class="h3 mb-4">{{ $novedad->exists ? 'Editar novedad' : 'Nueva novedad' }}</h1>
+<div class="container page-intro">
+    <span class="eyebrow">Panel de gestión</span>
+    <h1>{{ $novedad->exists ? 'Editar novedad' : 'Crear una novedad' }}</h1>
+    <p>Comparte información clara y útil con estudiantes, familias y docentes.</p>
+</div>
 
-@if ($errors->any())
-    <div class="alert alert-danger">Revisa los campos marcados.</div>
-@endif
+<div class="container form-shell">
+    @if ($errors->any())
+        <div class="alert alert-error" role="alert">Revisa los campos marcados antes de publicar.</div>
+    @endif
 
-<form method="POST" action="{{ $novedad->exists ? route('novedades.update', $novedad) : route('novedades.store') }}" class="card"><div class="card-body">
-    @csrf
-    @if ($novedad->exists) @method('PUT') @endif
+    {{-- novalidate: la validación definitiva es la de Laravel; portal.js solo ayuda en los campos obligatorios --}}
+    <form class="form-card" data-news-form method="POST" novalidate
+          action="{{ $novedad->exists ? route('novedades.update', $novedad) : route('novedades.store') }}">
+        @csrf
+        @if ($novedad->exists) @method('PUT') @endif
 
-    <div class="mb-3">
-        <label for="titulo" class="form-label">Título *</label>
-        <input id="titulo" name="titulo" value="{{ old('titulo', $novedad->titulo) }}" maxlength="150" required
-               class="form-control @error('titulo') is-invalid @enderror">
-        @error('titulo')<div class="invalid-feedback">{{ $message }}</div>@enderror
-    </div>
+        <div class="field @error('titulo') invalid @enderror">
+            <label for="titulo">Título <span aria-hidden="true">*</span></label>
+            <input id="titulo" name="titulo" type="text" maxlength="150" required placeholder="Ej. Jornada de lectura en la sede"
+                   value="{{ old('titulo', $novedad->titulo) }}" @error('titulo') aria-invalid="true" @enderror>
+            <span class="field-error">{{ $errors->first('titulo') ?: 'Escribe un título para la novedad.' }}</span>
+        </div>
 
-    <div class="row g-3 mb-3">
-        <div class="col-md-6">
-            <label for="categoria" class="form-label">Categoría *</label>
-            <select id="categoria" name="categoria" class="form-select @error('categoria') is-invalid @enderror">
+        <div class="field @error('categoria') invalid @enderror">
+            <label for="categoria">Categoría <span aria-hidden="true">*</span></label>
+            <select id="categoria" name="categoria" required>
+                <option value="">Selecciona una categoría</option>
                 @foreach (\App\Models\Novedad::CATEGORIAS as $cat)
-                    <option value="{{ $cat }}" @selected(old('categoria', $novedad->categoria ?? 'General') === $cat)>{{ $cat }}</option>
+                    <option value="{{ $cat }}" @selected(old('categoria', $novedad->categoria) === $cat)>{{ $cat }}</option>
                 @endforeach
             </select>
-            @error('categoria')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            <span class="field-error">{{ $errors->first('categoria') ?: 'Selecciona una categoría.' }}</span>
         </div>
-        <div class="col-md-6">
-            <label for="fecha_publicacion" class="form-label">Fecha de publicación *</label>
-            <input type="date" id="fecha_publicacion" name="fecha_publicacion" required
-                   value="{{ old('fecha_publicacion', optional($novedad->fecha_publicacion)->format('Y-m-d')) }}"
-                   class="form-control @error('fecha_publicacion') is-invalid @enderror">
-            @error('fecha_publicacion')<div class="invalid-feedback">{{ $message }}</div>@enderror
+
+        <div class="field @error('fecha_publicacion') invalid @enderror">
+            <label for="fecha_publicacion">Fecha <span aria-hidden="true">*</span></label>
+            <input id="fecha_publicacion" name="fecha_publicacion" type="date" required
+                   value="{{ old('fecha_publicacion', optional($novedad->fecha_publicacion)->format('Y-m-d')) }}">
+            <span class="field-error">{{ $errors->first('fecha_publicacion') ?: 'Selecciona la fecha de publicación.' }}</span>
         </div>
-    </div>
 
-    <div class="mb-3">
-        <label for="resumen" class="form-label">Resumen <span class="text-muted">(opcional)</span></label>
-        <input id="resumen" name="resumen" value="{{ old('resumen', $novedad->resumen) }}" maxlength="300"
-               class="form-control @error('resumen') is-invalid @enderror">
-        @error('resumen')<div class="invalid-feedback">{{ $message }}</div>@enderror
-    </div>
+        <div class="field @error('resumen') invalid @enderror">
+            <label for="resumen">Resumen <span style="font-weight:500;color:var(--muted)">(opcional)</span></label>
+            <textarea id="resumen" name="resumen" rows="3" maxlength="300" placeholder="Una frase corta para contar de qué se trata.">{{ old('resumen', $novedad->resumen) }}</textarea>
+            <small>Máximo 300 caracteres. Ayuda a las familias a entender rápidamente la noticia.</small>
+            <span class="field-error">{{ $errors->first('resumen') }}</span>
+        </div>
 
-    <div class="mb-3">
-        <label for="contenido" class="form-label">Contenido *</label>
-        <textarea id="contenido" name="contenido" rows="8" required
-                  class="form-control @error('contenido') is-invalid @enderror">{{ old('contenido', $novedad->contenido) }}</textarea>
-        @error('contenido')<div class="invalid-feedback">{{ $message }}</div>@enderror
-    </div>
+        <div class="field @error('contenido') invalid @enderror">
+            <label for="contenido">Contenido <span aria-hidden="true">*</span></label>
+            <textarea id="contenido" name="contenido" required rows="8" placeholder="Escribe la información completa con palabras sencillas...">{{ old('contenido', $novedad->contenido) }}</textarea>
+            <span class="field-error">{{ $errors->first('contenido') ?: 'Agrega el contenido de la novedad.' }}</span>
+        </div>
 
-    <button class="btn btn-success">{{ $novedad->exists ? 'Guardar cambios' : 'Publicar' }}</button>
-    <a href="{{ $novedad->exists ? route('novedades.show', $novedad) : route('novedades.index') }}" class="btn btn-link">Cancelar</a>
-</div></form>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" type="submit">{{ $novedad->exists ? 'Guardar cambios' : 'Publicar novedad' }}</button>
+            <a class="btn btn-outline" href="{{ $novedad->exists ? route('novedades.show', $novedad) : route('novedades.index') }}">Cancelar</a>
+        </div>
+    </form>
+</div>
 @endsection

@@ -14,8 +14,10 @@ class NovedadController extends Controller
     public function index(Request $request): View
     {
         $buscar = trim((string) $request->query('buscar', ''));
+        $categoria = in_array($request->query('categoria'), Novedad::CATEGORIAS, true) ? $request->query('categoria') : null;
 
         $novedades = Novedad::query()
+            ->when($categoria, fn ($q) => $q->where('categoria', $categoria))
             ->when($buscar !== '', fn ($q) => $q->where(fn ($q) => $q
                 ->where('titulo', 'ilike', "%{$buscar}%")
                 ->orWhere('contenido', 'ilike', "%{$buscar}%")))
@@ -24,7 +26,7 @@ class NovedadController extends Controller
             ->paginate(6)
             ->withQueryString();
 
-        return view('novedades.index', compact('novedades', 'buscar'));
+        return view('novedades.index', compact('novedades', 'buscar', 'categoria'));
     }
 
     public function show(Novedad $novedad): View
