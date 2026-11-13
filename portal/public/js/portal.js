@@ -1,5 +1,28 @@
 /* Portal San Luquitas — mejoras progresivas. Todo funciona también sin JavaScript. */
 document.addEventListener('DOMContentLoaded', () => {
+  // Accesibilidad: tamaño de letra y contraste (se recuerdan en este dispositivo)
+  const raiz = document.documentElement;
+  const guardar = (k, v) => { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+  document.querySelectorAll('[data-letra]').forEach(b => b.addEventListener('click', () => {
+    const actual = Number(raiz.dataset.letra || 0);
+    const nuevo = Math.max(0, Math.min(2, actual + (b.dataset.letra === 'mas' ? 1 : -1)));
+    if (nuevo) { raiz.dataset.letra = String(nuevo); guardar('sl-letra', String(nuevo)); }
+    else { delete raiz.dataset.letra; guardar('sl-letra', null); }
+  }));
+  const contraste = document.querySelector('[data-contraste]');
+  if (contraste) {
+    const esOscuro = () => raiz.classList.contains('oscuro') ||
+      (!raiz.classList.contains('claro') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    contraste.setAttribute('aria-pressed', String(esOscuro()));
+    contraste.addEventListener('click', () => {
+      const oscuro = !esOscuro();
+      raiz.classList.toggle('oscuro', oscuro);
+      raiz.classList.toggle('claro', !oscuro);
+      guardar('sl-tema', oscuro ? 'oscuro' : 'claro');
+      contraste.setAttribute('aria-pressed', String(oscuro));
+    });
+  }
+
   // Menú en celular
   const abrir = document.querySelector('[data-menu-abrir]');
   const menu = document.getElementById('menu');

@@ -3,7 +3,13 @@
 // Configuración propia del Portal San Luquitas
 return [
     'institucion' => 'Institución Educativa San Luquitas',
+    'lema' => 'Educación rural con calidad humana y tecnología',
     'municipio' => 'Vereda El Arrayán, zona rural',
+    // Datos de contacto ficticios (caso académico)
+    'direccion' => 'Sede principal: vereda El Arrayán, km 12 vía al casco urbano',
+    'telefono' => '(607) 000 0000',
+    'correo' => 'secretaria@sanluquitas.local',
+    'horario' => 'Lunes a viernes, 7:00 a. m. a 1:00 p. m.',
     'moodle_url' => env('MOODLE_URL', 'https://moodle.sanluquitas.local'),
     'whatsapp' => env('PORTAL_WHATSAPP', '300 000 0000'),   // número ficticio de demostración
 
@@ -18,6 +24,15 @@ return [
      | Licencia NC-ND: uso no comercial y sin modificar (no se recortan: se
      | muestran en su proporción original 3:2).
      */
+    // Foto ilustrativa que acompaña cada noticia según su categoría
+    'foto_por_categoria' => [
+        'General' => 'paisaje',
+        'Académico' => 'estudiantes',
+        'Eventos' => 'a-clase',
+        'Comunidad' => 'vereda',
+        'Tecnología' => 'sala-computo',
+    ],
+
     'fotos' => [
         'a-clase' => [
             'archivo' => 'img/fotos/estudiante-corre-a-clase.jpg',

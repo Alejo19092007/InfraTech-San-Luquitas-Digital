@@ -31,7 +31,10 @@ class NovedadController extends Controller
 
     public function show(Novedad $novedad): View
     {
-        return view('novedades.show', compact('novedad'));
+        $recientes = Novedad::whereKeyNot($novedad->getKey())
+            ->orderByDesc('fecha_publicacion')->orderByDesc('id')->limit(4)->get();
+
+        return view('novedades.show', compact('novedad', 'recientes'));
     }
 
     public function create(): View
@@ -44,7 +47,7 @@ class NovedadController extends Controller
         $novedad = Novedad::create($this->validar($request));
 
         return redirect()->route('novedades.show', $novedad)
-            ->with('estado', 'Novedad publicada correctamente.');
+            ->with('estado', 'La noticia se publicó correctamente.');
     }
 
     public function edit(Novedad $novedad): View
@@ -57,7 +60,7 @@ class NovedadController extends Controller
         $novedad->update($this->validar($request));
 
         return redirect()->route('novedades.show', $novedad)
-            ->with('estado', 'Novedad actualizada correctamente.');
+            ->with('estado', 'Los cambios se guardaron.');
     }
 
     public function destroy(Novedad $novedad): RedirectResponse
@@ -65,7 +68,7 @@ class NovedadController extends Controller
         $novedad->delete();
 
         return redirect()->route('novedades.index')
-            ->with('estado', 'Novedad eliminada.');
+            ->with('estado', 'La noticia se eliminó.');
     }
 
     private function validar(Request $request): array

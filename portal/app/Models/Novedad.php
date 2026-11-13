@@ -19,7 +19,13 @@ class Novedad extends Model
 
     public const CATEGORIAS = ['General', 'Académico', 'Eventos', 'Comunidad', 'Tecnología'];
 
-    // Clase CSS del punto de color de la categoría (cat-academico, cat-eventos…)
+    // Clave de la foto ilustrativa (config/portal.php) según la categoría
+    public function foto(): string
+    {
+        return config('portal.foto_por_categoria.'.$this->categoria, 'paisaje');
+    }
+
+    // Clase CSS de la etiqueta de categoría (cat-academico, cat-eventos…)
     public function claseCategoria(): string
     {
         return 'cat-'.Str::slug($this->categoria);

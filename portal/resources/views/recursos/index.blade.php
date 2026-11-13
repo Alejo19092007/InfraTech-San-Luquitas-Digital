@@ -3,8 +3,9 @@
 
 @section('contenido')
 <div class="envoltura">
+    <p class="miga">Estás en: <a href="{{ route('inicio') }}">Inicio</a> / Recursos educativos</p>
     <header class="cabeza-pagina">
-        <h1>Recursos para aprender a programar</h1>
+        <h1>Recursos educativos</h1>
         <p>Juegos, actividades y guías para clase o para la casa. Los marcados “Sin internet” se pueden usar sin conexión.</p>
     </header>
 
@@ -26,7 +27,7 @@
     <ul class="recursos">
         @foreach ($recursos as $recurso)
             <li class="recurso {{ $recurso->claseCategoria() }}" data-recurso data-categoria="{{ $recurso->categoria }}">
-                <span class="categoria">{{ $recurso->categoria }}</span>
+                <span><span class="etiqueta">{{ $recurso->categoria }}</span></span>
                 <h3>{{ $recurso->titulo }}</h3>
                 <p>{{ $recurso->descripcion }}</p>
                 <div class="pie">
@@ -40,4 +41,5 @@
     </ul>
     <p class="vacio" data-vacio @if ($recursos->isNotEmpty()) hidden @endif>No hay recursos con ese filtro. Prueba con otra palabra o elige “Todas”.</p>
 </div>
+<div class="seccion"></div>
 @endsection

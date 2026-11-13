@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('titulo', $novedad->exists ? 'Editar aviso' : 'Publicar un aviso')
+@section('titulo', $novedad->exists ? 'Editar noticia' : 'Publicar noticia')
 
 @section('contenido')
 <div class="envoltura">
+    <p class="miga">Estás en: <a href="{{ route('inicio') }}">Inicio</a> / <a href="{{ route('novedades.index') }}">Noticias</a> / {{ $novedad->exists ? 'Editar' : 'Publicar' }}</p>
     <header class="cabeza-pagina">
-        <p class="miga"><a href="{{ route('novedades.index') }}">Cartelera</a></p>
-        <h1>{{ $novedad->exists ? 'Editar aviso' : 'Publicar un aviso' }}</h1>
+        <h1>{{ $novedad->exists ? 'Editar noticia' : 'Publicar noticia' }}</h1>
         <p>Escribe con palabras sencillas: lo leen estudiantes, familias y docentes.</p>
     </header>
 
@@ -22,7 +22,7 @@
             <label for="titulo">Título <span class="obligatorio" aria-hidden="true">*</span></label>
             <input id="titulo" name="titulo" type="text" maxlength="150" required value="{{ old('titulo', $novedad->titulo) }}"
                    placeholder="Ej.: Reunión de acudientes el viernes" aria-describedby="titulo-error" @error('titulo') aria-invalid="true" @enderror>
-            <span class="error" id="titulo-error">{{ $errors->first('titulo') ?: 'Escribe el título del aviso.' }}</span>
+            <span class="error" id="titulo-error">{{ $errors->first('titulo') ?: 'Escribe el título de la noticia.' }}</span>
         </div>
 
         <div class="campo-fila">
@@ -47,18 +47,18 @@
         <div class="campo @error('resumen') invalido @enderror">
             <label for="resumen">Resumen (opcional)</label>
             <input id="resumen" name="resumen" type="text" maxlength="300" value="{{ old('resumen', $novedad->resumen) }}" aria-describedby="resumen-ayuda">
-            <span class="ayuda" id="resumen-ayuda">Una frase que se muestra en la cartelera. Máximo 300 caracteres.</span>
+            <span class="ayuda" id="resumen-ayuda">Una frase que se muestra en el listado de noticias. Máximo 300 caracteres.</span>
             <span class="error">{{ $errors->first('resumen') }}</span>
         </div>
 
         <div class="campo @error('contenido') invalido @enderror">
-            <label for="contenido">Texto del aviso <span class="obligatorio" aria-hidden="true">*</span></label>
+            <label for="contenido">Contenido <span class="obligatorio" aria-hidden="true">*</span></label>
             <textarea id="contenido" name="contenido" required rows="9" aria-describedby="contenido-error">{{ old('contenido', $novedad->contenido) }}</textarea>
-            <span class="error" id="contenido-error">{{ $errors->first('contenido') ?: 'Escribe el texto del aviso.' }}</span>
+            <span class="error" id="contenido-error">{{ $errors->first('contenido') ?: 'Escribe el contenido de la noticia.' }}</span>
         </div>
 
         <div class="botones">
-            <button class="boton" type="submit">{{ $novedad->exists ? 'Guardar cambios' : 'Publicar aviso' }}</button>
+            <button class="boton" type="submit">{{ $novedad->exists ? 'Guardar cambios' : 'Publicar noticia' }}</button>
             <a class="boton boton-borde" href="{{ $novedad->exists ? route('novedades.show', $novedad) : route('novedades.index') }}">Cancelar</a>
         </div>
     </form>

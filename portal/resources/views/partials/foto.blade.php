@@ -1,5 +1,7 @@
 {{-- Foto ilustrativa con su crédito. Uso: @include('partials.foto', ['clave' => 'a-clase']) --}}
-@php($f = config("portal.fotos.$clave"))
+@php
+    $f = config('portal.fotos.'.$clave);
+@endphp
 <figure class="foto">
     <div class="foto-marco">
         @if (file_exists(public_path($f['archivo'])))
