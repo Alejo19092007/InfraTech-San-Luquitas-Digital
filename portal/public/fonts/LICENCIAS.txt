@@ -1,0 +1,3 @@
+Bricolage Grotesque — SIL Open Font License 1.1
+Atkinson Hyperlegible Next — SIL Open Font License 1.1 (Braille Institute)
+Archivos obtenidos de los paquetes @fontsource-variable (npm), servidos localmente.

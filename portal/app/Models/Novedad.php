@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Novedad extends Model
 {
@@ -18,13 +19,9 @@ class Novedad extends Model
 
     public const CATEGORIAS = ['General', 'Académico', 'Eventos', 'Comunidad', 'Tecnología'];
 
-    // Color de la etiqueta en el diseño (clases .tag, .tag.green, .tag.earth)
-    public function claseEtiqueta(): string
+    // Clase CSS del punto de color de la categoría (cat-academico, cat-eventos…)
+    public function claseCategoria(): string
     {
-        return match ($this->categoria) {
-            'Académico', 'Tecnología' => 'tag green',
-            'Comunidad' => 'tag earth',
-            default => 'tag',
-        };
+        return 'cat-'.Str::slug($this->categoria);
     }
 }

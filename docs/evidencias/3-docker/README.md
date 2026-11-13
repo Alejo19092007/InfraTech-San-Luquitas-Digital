@@ -101,3 +101,22 @@ docker compose restart laravel-app && docker compose logs laravel-app --tail=5
 docker compose ps
 ```
 La novedad id 8 sigue existiendo tras recrear todo: los datos viven en el volumen `pg_data`, no en el contenedor. El reinicio de `laravel-app` muestra el cierre ordenado de PHP-FPM y el arranque sin migraciones pendientes.
+
+### Error en el respaldo y solución — `10-error-permisos-backup.png`
+**Síntoma:** `chmod: changing permissions of '.../laravel_storage.tar.gz': Operation not permitted` y "el respaldo NO se completó".
+**Causa:** el `tar` corría en un contenedor como root y escribía el archivo directamente en `/srv/backups`, así que quedaba a nombre de root y `sladmin` no podía cambiarle los permisos.
+**Solución:** `tar` escribe en la salida estándar (`-czf -`) y el archivo lo crea el propio script con el usuario `sladmin`.
+
+### Prueba 4 — Respaldo, borrado y restauración — `11-respaldo-borrado-y-restauracion.png`
+```bash
+./scripts/backup.sh && ls -lh /srv/backups/$(date +%F)/   # respaldo completo, archivos de sladmin con permisos 600
+# En el portal: se elimina la novedad id 8
+docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d laravel_db -c "SELECT id, titulo FROM novedades WHERE id = 8;"'   # (0 rows)
+./scripts/restore.sh $(date +%F)                           # verifica SHA-256, pg_restore --clean, restaura volúmenes
+docker compose exec postgres sh -c 'psql -U "$POSTGRES_USER" -d laravel_db -c "SELECT id, titulo FROM novedades WHERE id = 8;"'   # la novedad vuelve
+```
+| Paso | Resultado |
+|---|---|
+| Respaldo | `moodle_db.dump`, `laravel_db.dump`, `laravel_storage.tar.gz`, `env.gpg` (cifrado) y `SHA256SUMS` |
+| Después de borrar | `(0 rows)` |
+| Después de restaurar | `8 | Prueba de registro desde el portal` |

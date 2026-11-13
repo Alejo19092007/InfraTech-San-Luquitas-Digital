@@ -1,78 +1,72 @@
-/* Interacciones progresivas: menú móvil, filtros, búsqueda, validación y confirmación. */
+/* Portal San Luquitas — mejoras progresivas. Todo funciona también sin JavaScript. */
 document.addEventListener('DOMContentLoaded', () => {
-  const toggle = document.querySelector('[data-menu-toggle]');
-  const nav = document.querySelector('[data-nav]');
-  if (toggle && nav) {
-    toggle.addEventListener('click', () => {
-      const open = nav.classList.toggle('is-open');
-      toggle.setAttribute('aria-expanded', String(open));
-      toggle.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+  // Menú en celular
+  const abrir = document.querySelector('[data-menu-abrir]');
+  const menu = document.getElementById('menu');
+  if (abrir && menu) {
+    abrir.addEventListener('click', () => {
+      const abierto = menu.classList.toggle('abierto');
+      abrir.setAttribute('aria-expanded', String(abierto));
     });
-    nav.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
-      nav.classList.remove('is-open'); toggle.setAttribute('aria-expanded','false');
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && menu.classList.contains('abierto')) {
+        menu.classList.remove('abierto'); abrir.setAttribute('aria-expanded', 'false'); abrir.focus();
+      }
+    });
+  }
+
+  // Recursos: filtro por categoría y búsqueda sin recargar la página
+  const filtros = [...document.querySelectorAll('[data-filtro]')];
+  const recursos = [...document.querySelectorAll('[data-recurso]')];
+  const buscar = document.querySelector('[data-buscar]');
+  const vacio = document.querySelector('[data-vacio]');
+  const contador = document.querySelector('[data-contador]');
+  if (recursos.length) {
+    let activa = 'todas';
+    const normalizar = t => t.toLocaleLowerCase('es').normalize('NFD').replace(/\p{Diacritic}/gu, '');
+    const aplicar = () => {
+      const termino = normalizar(buscar?.value.trim() || '');
+      let visibles = 0;
+      recursos.forEach(r => {
+        const coincide = (activa === 'todas' || r.dataset.categoria === activa) && normalizar(r.textContent).includes(termino);
+        r.hidden = !coincide;
+        if (coincide) visibles++;
+      });
+      if (vacio) vacio.hidden = visibles > 0;
+      if (contador) contador.textContent = visibles === 1 ? '1 recurso' : `${visibles} recursos`;
+    };
+    filtros.forEach(f => f.addEventListener('click', () => {
+      activa = f.dataset.filtro;
+      filtros.forEach(o => o.setAttribute('aria-pressed', String(o === f)));
+      aplicar();
     }));
+    buscar?.addEventListener('input', aplicar);
+    const inicial = new URLSearchParams(location.search).get('categoria');
+    filtros.find(f => f.dataset.filtro === inicial)?.click();
   }
 
-  // Filtros de recursos y novedades. Cada tarjeta puede declarar data-category y data-search.
-  const chips = [...document.querySelectorAll('[data-filter]')];
-  const cards = [...document.querySelectorAll('[data-filter-card]')];
-  const search = document.querySelector('[data-search]');
-  let active = 'Todas';
-  function filterCards() {
-    const term = (search?.value || '').trim().toLocaleLowerCase('es');
-    let shown = 0;
-    cards.forEach(card => {
-      const category = card.dataset.category || '';
-      const haystack = (card.dataset.search || card.textContent).toLocaleLowerCase('es');
-      const match = (active === 'Todas' || category === active) && haystack.includes(term);
-      card.hidden = !match; if (match) shown++;
-    });
-    const empty = document.querySelector('[data-empty-state]');
-    if (empty) empty.hidden = shown !== 0;
-  }
-  chips.forEach(chip => chip.addEventListener('click', () => {
-    active = chip.dataset.filter;
-    chips.forEach(c => c.setAttribute('aria-pressed', String(c === chip)));
-    filterCards();
-  }));
-  search?.addEventListener('input', filterCards);
-
-  // Permite llegar filtrado desde otra página: /recursos?categoria=Para%20docentes
-  const inicial = new URLSearchParams(location.search).get('categoria');
-  const chipInicial = chips.find(c => c.dataset.filter === inicial);
-  if (chipInicial) chipInicial.click();
-
-  // Confirmación antes de eliminar. En Laravel, sustituir data-delete-url por una ruta real.
-  document.querySelectorAll('[data-confirm-delete]').forEach(form => {
-    form.addEventListener('submit', event => {
-      if (!window.confirm('¿Seguro que deseas eliminar esta novedad? Esta acción no se puede deshacer.')) event.preventDefault();
+  // Confirmación antes de eliminar
+  document.querySelectorAll('[data-confirmar]').forEach(form => {
+    form.addEventListener('submit', e => {
+      if (!window.confirm(form.dataset.confirmar)) e.preventDefault();
     });
   });
 
-  // Validación de cliente de ejemplo; la validación definitiva debe repetirse en Laravel.
-  const form = document.querySelector('[data-news-form]');
-  if (form) {
-    form.addEventListener('submit', event => {
-      let valid = true;
-      form.querySelectorAll('[required]').forEach(input => {
-        const field = input.closest('.field');
-        const missing = !input.value.trim();
-        field?.classList.toggle('invalid', missing);
-        input.setAttribute('aria-invalid', String(missing));
-        if (missing) valid = false;
+  // Ayuda inmediata en los campos obligatorios (Laravel valida de nuevo en el servidor)
+  const formulario = document.querySelector('[data-formulario]');
+  if (formulario) {
+    formulario.addEventListener('submit', e => {
+      let primero = null;
+      formulario.querySelectorAll('[required]').forEach(c => {
+        const falta = !c.value.trim();
+        c.closest('.campo')?.classList.toggle('invalido', falta);
+        c.setAttribute('aria-invalid', String(falta));
+        if (falta && !primero) primero = c;
       });
-      if (!valid) event.preventDefault();
-      else {
-        // En una demo estática mostramos el estado. En Blade, dejar que Laravel procese el POST.
-        if (form.dataset.demo === 'true') {
-          event.preventDefault();
-          const success = document.querySelector('[data-success-message]');
-          if (success) { success.hidden = false; success.scrollIntoView({behavior:'smooth',block:'center'}); }
-        }
-      }
+      if (primero) { e.preventDefault(); primero.focus(); }
     });
-    form.querySelectorAll('input,select,textarea').forEach(input => input.addEventListener('input', () => {
-      if (input.value.trim()) input.closest('.field')?.classList.remove('invalid');
+    formulario.querySelectorAll('input, select, textarea').forEach(c => c.addEventListener('input', () => {
+      if (c.value.trim()) { c.closest('.campo')?.classList.remove('invalido'); c.removeAttribute('aria-invalid'); }
     }));
   }
 });

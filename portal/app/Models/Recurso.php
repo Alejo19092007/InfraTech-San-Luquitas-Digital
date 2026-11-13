@@ -17,22 +17,14 @@ class Recurso extends Model
 
     public const CATEGORIAS = ['Programación visual', 'Pensamiento computacional', 'Para docentes', 'Juegos educativos'];
 
-    public function icono(): string
+    // Clase CSS del color del recurso según su categoría
+    public function claseCategoria(): string
     {
         return match ($this->categoria) {
-            'Programación visual' => '🧩',
-            'Pensamiento computacional' => '🧠',
-            'Para docentes' => '📚',
-            default => '🎲',
-        };
-    }
-
-    public function claseEtiqueta(): string
-    {
-        return match ($this->categoria) {
-            'Programación visual' => 'tag green',
-            'Para docentes' => 'tag earth',
-            default => 'tag',
+            'Programación visual' => 'rec-visual',
+            'Pensamiento computacional' => 'rec-pensamiento',
+            'Para docentes' => 'rec-docentes',
+            default => 'rec-juegos',
         };
     }
 }

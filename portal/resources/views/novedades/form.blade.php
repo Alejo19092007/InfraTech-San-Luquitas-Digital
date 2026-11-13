@@ -1,65 +1,65 @@
 @extends('layouts.app')
-@section('titulo', $novedad->exists ? 'Editar novedad' : 'Crear novedad')
+@section('titulo', $novedad->exists ? 'Editar aviso' : 'Publicar un aviso')
 
 @section('contenido')
-<div class="container page-intro">
-    <span class="eyebrow">Panel de gestión</span>
-    <h1>{{ $novedad->exists ? 'Editar novedad' : 'Crear una novedad' }}</h1>
-    <p>Comparte información clara y útil con estudiantes, familias y docentes.</p>
-</div>
+<div class="envoltura">
+    <header class="cabeza-pagina">
+        <p class="miga"><a href="{{ route('novedades.index') }}">Cartelera</a></p>
+        <h1>{{ $novedad->exists ? 'Editar aviso' : 'Publicar un aviso' }}</h1>
+        <p>Escribe con palabras sencillas: lo leen estudiantes, familias y docentes.</p>
+    </header>
 
-<div class="container form-shell">
     @if ($errors->any())
-        <div class="alert alert-error" role="alert">Revisa los campos marcados antes de publicar.</div>
+        <p class="alerta alerta-error" role="alert">Faltan datos o hay campos por corregir. Revisa los que están marcados en rojo.</p>
     @endif
 
-    {{-- novalidate: la validación definitiva es la de Laravel; portal.js solo ayuda en los campos obligatorios --}}
-    <form class="form-card" data-news-form method="POST" novalidate
+    <form class="formulario" method="POST" data-formulario novalidate
           action="{{ $novedad->exists ? route('novedades.update', $novedad) : route('novedades.store') }}">
         @csrf
         @if ($novedad->exists) @method('PUT') @endif
 
-        <div class="field @error('titulo') invalid @enderror">
-            <label for="titulo">Título <span aria-hidden="true">*</span></label>
-            <input id="titulo" name="titulo" type="text" maxlength="150" required placeholder="Ej. Jornada de lectura en la sede"
-                   value="{{ old('titulo', $novedad->titulo) }}" @error('titulo') aria-invalid="true" @enderror>
-            <span class="field-error">{{ $errors->first('titulo') ?: 'Escribe un título para la novedad.' }}</span>
+        <div class="campo @error('titulo') invalido @enderror">
+            <label for="titulo">Título <span class="obligatorio" aria-hidden="true">*</span></label>
+            <input id="titulo" name="titulo" type="text" maxlength="150" required value="{{ old('titulo', $novedad->titulo) }}"
+                   placeholder="Ej.: Reunión de acudientes el viernes" aria-describedby="titulo-error" @error('titulo') aria-invalid="true" @enderror>
+            <span class="error" id="titulo-error">{{ $errors->first('titulo') ?: 'Escribe el título del aviso.' }}</span>
         </div>
 
-        <div class="field @error('categoria') invalid @enderror">
-            <label for="categoria">Categoría <span aria-hidden="true">*</span></label>
-            <select id="categoria" name="categoria" required>
-                <option value="">Selecciona una categoría</option>
-                @foreach (\App\Models\Novedad::CATEGORIAS as $cat)
-                    <option value="{{ $cat }}" @selected(old('categoria', $novedad->categoria) === $cat)>{{ $cat }}</option>
-                @endforeach
-            </select>
-            <span class="field-error">{{ $errors->first('categoria') ?: 'Selecciona una categoría.' }}</span>
+        <div class="campo-fila">
+            <div class="campo @error('categoria') invalido @enderror">
+                <label for="categoria">Categoría <span class="obligatorio" aria-hidden="true">*</span></label>
+                <select id="categoria" name="categoria" required aria-describedby="categoria-error">
+                    <option value="">Elige una</option>
+                    @foreach (\App\Models\Novedad::CATEGORIAS as $cat)
+                        <option value="{{ $cat }}" @selected(old('categoria', $novedad->categoria) === $cat)>{{ $cat }}</option>
+                    @endforeach
+                </select>
+                <span class="error" id="categoria-error">{{ $errors->first('categoria') ?: 'Elige una categoría.' }}</span>
+            </div>
+            <div class="campo @error('fecha_publicacion') invalido @enderror">
+                <label for="fecha_publicacion">Fecha de publicación <span class="obligatorio" aria-hidden="true">*</span></label>
+                <input id="fecha_publicacion" name="fecha_publicacion" type="date" required aria-describedby="fecha-error"
+                       value="{{ old('fecha_publicacion', optional($novedad->fecha_publicacion)->format('Y-m-d')) }}">
+                <span class="error" id="fecha-error">{{ $errors->first('fecha_publicacion') ?: 'Elige la fecha.' }}</span>
+            </div>
         </div>
 
-        <div class="field @error('fecha_publicacion') invalid @enderror">
-            <label for="fecha_publicacion">Fecha <span aria-hidden="true">*</span></label>
-            <input id="fecha_publicacion" name="fecha_publicacion" type="date" required
-                   value="{{ old('fecha_publicacion', optional($novedad->fecha_publicacion)->format('Y-m-d')) }}">
-            <span class="field-error">{{ $errors->first('fecha_publicacion') ?: 'Selecciona la fecha de publicación.' }}</span>
+        <div class="campo @error('resumen') invalido @enderror">
+            <label for="resumen">Resumen (opcional)</label>
+            <input id="resumen" name="resumen" type="text" maxlength="300" value="{{ old('resumen', $novedad->resumen) }}" aria-describedby="resumen-ayuda">
+            <span class="ayuda" id="resumen-ayuda">Una frase que se muestra en la cartelera. Máximo 300 caracteres.</span>
+            <span class="error">{{ $errors->first('resumen') }}</span>
         </div>
 
-        <div class="field @error('resumen') invalid @enderror">
-            <label for="resumen">Resumen <span style="font-weight:500;color:var(--muted)">(opcional)</span></label>
-            <textarea id="resumen" name="resumen" rows="3" maxlength="300" placeholder="Una frase corta para contar de qué se trata.">{{ old('resumen', $novedad->resumen) }}</textarea>
-            <small>Máximo 300 caracteres. Ayuda a las familias a entender rápidamente la noticia.</small>
-            <span class="field-error">{{ $errors->first('resumen') }}</span>
+        <div class="campo @error('contenido') invalido @enderror">
+            <label for="contenido">Texto del aviso <span class="obligatorio" aria-hidden="true">*</span></label>
+            <textarea id="contenido" name="contenido" required rows="9" aria-describedby="contenido-error">{{ old('contenido', $novedad->contenido) }}</textarea>
+            <span class="error" id="contenido-error">{{ $errors->first('contenido') ?: 'Escribe el texto del aviso.' }}</span>
         </div>
 
-        <div class="field @error('contenido') invalid @enderror">
-            <label for="contenido">Contenido <span aria-hidden="true">*</span></label>
-            <textarea id="contenido" name="contenido" required rows="8" placeholder="Escribe la información completa con palabras sencillas...">{{ old('contenido', $novedad->contenido) }}</textarea>
-            <span class="field-error">{{ $errors->first('contenido') ?: 'Agrega el contenido de la novedad.' }}</span>
-        </div>
-
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn btn-primary" type="submit">{{ $novedad->exists ? 'Guardar cambios' : 'Publicar novedad' }}</button>
-            <a class="btn btn-outline" href="{{ $novedad->exists ? route('novedades.show', $novedad) : route('novedades.index') }}">Cancelar</a>
+        <div class="botones">
+            <button class="boton" type="submit">{{ $novedad->exists ? 'Guardar cambios' : 'Publicar aviso' }}</button>
+            <a class="boton boton-borde" href="{{ $novedad->exists ? route('novedades.show', $novedad) : route('novedades.index') }}">Cancelar</a>
         </div>
     </form>
 </div>

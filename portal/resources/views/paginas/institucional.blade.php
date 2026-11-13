@@ -1,46 +1,52 @@
 @extends('layouts.app')
-@section('titulo', 'Información institucional')
+@section('titulo', 'La escuela')
 
 @section('contenido')
-<div class="container page-intro">
-    <span class="eyebrow">Nuestra comunidad</span>
-    <h1>Una escuela, muchas veredas</h1>
-    <p>Somos una institución rural que aprende de su territorio y acompaña a niñas y niños a descubrir todo lo que pueden lograr.</p>
+<div class="envoltura">
+    <header class="cabeza-pagina">
+        <h1>Una escuela, tres veredas</h1>
+        <p>San Luquitas es una institución oficial rural de preescolar y básica primaria. Trabajamos con el modelo Escuela Nueva: grupos multigrado, guías de aprendizaje y la comunidad metida en la escuela.</p>
+    </header>
+
+    <section class="proposito">
+        <div>
+            <h2>Misión</h2>
+            <p>Brindar una educación cercana y de calidad que fortalezca los saberes, los valores y las capacidades de nuestros estudiantes, en diálogo con la cultura campesina, el cuidado del entorno y las competencias digitales.</p>
+        </div>
+        <div>
+            <h2>Visión</h2>
+            <p>En 2030 seremos una institución rural reconocida en el departamento por integrar la programación y el pensamiento computacional desde la primaria, con familias que participan y una comunidad conectada.</p>
+        </div>
+    </section>
 </div>
 
-<div class="container section"><div class="info-grid">
-    <section class="info-panel"><span class="card-icon">🎯</span><h2>Nuestra misión</h2><p>Brindar una educación inclusiva, cercana y de calidad que fortalezca los saberes, valores y capacidades de nuestros estudiantes, en diálogo con la cultura campesina, el cuidado del entorno y las competencias digitales.</p></section>
-    <section class="info-panel"><span class="card-icon">🌄</span><h2>Nuestra visión</h2><p>Para 2030 seremos una comunidad educativa reconocida por formar personas solidarias, creativas y comprometidas con el desarrollo sostenible de sus veredas, integrando la programación y el pensamiento computacional desde la primaria.</p></section>
-</div></div>
-
-<div class="container section">
-    <div class="section-head"><div><span class="eyebrow">En cifras</span><h2>Datos generales</h2></div></div>
-    <table class="data-table"><tbody>
-        @foreach ([
-            'Nombre' => config('portal.institucion'),
-            'Carácter' => 'Oficial · Zona rural',
-            'Rector(a)' => 'María Fernanda Rojas',
-            'Estudiantes' => '186',
-            'Docentes' => '12',
-            'Jornada' => 'Mañana · lunes a viernes',
-            'Niveles' => 'Preescolar y básica primaria (escuela nueva / multigrado)',
-        ] as $dato => $valor)
-            <tr><th scope="row">{{ $dato }}</th><td>{{ $valor }}</td></tr>
-        @endforeach
-    </tbody></table>
-</div>
-
-<div class="container section">
-    <div class="section-head"><div><span class="eyebrow">Llegamos más lejos</span><h2>Nuestras tres sedes rurales</h2><p>Cada sede es un punto de encuentro para aprender y compartir.</p></div></div>
-    <div class="site-list">
-        @foreach ([
-            ['Sede El Arrayán (principal)', 'Vereda El Arrayán · Grados 0.º a 5.º · sala de informática y servidor local'],
-            ['Sede La Esperanza', 'Vereda La Esperanza · Grados 0.º a 5.º · escuela multigrado'],
-            ['Sede Alto del Roble', 'Vereda Alto del Roble · Grados 0.º a 5.º · conectividad satelital intermitente'],
-        ] as [$sede, $detalle])
-            <article class="site-card"><span class="card-icon">📍</span><h3>{{ $sede }}</h3><p>{{ $detalle }}</p></article>
-        @endforeach
+<section class="seccion">
+    <div class="envoltura con-foto">
+        <div>
+            <h2 class="seccion-titulo">Datos generales</h2>
+            <dl class="datos">
+                <div><dt>Rectora</dt><dd>María Fernanda Rojas</dd></div>
+                <div><dt>Estudiantes</dt><dd>186</dd></div>
+                <div><dt>Docentes</dt><dd>12</dd></div>
+                <div><dt>Jornada</dt><dd>Única, 7:00 a 1:00</dd></div>
+                <div><dt>Carácter</dt><dd>Oficial, rural</dd></div>
+                <div><dt>Niveles</dt><dd>Preescolar a 5.º</dd></div>
+            </dl>
+        </div>
+        @include('partials.foto', ['clave' => 'estudiantes'])
     </div>
-    <p class="breadcrumb">Toda la información de esta institución es ficticia y se usa con fines académicos.</p>
-</div>
+</section>
+
+<section class="seccion">
+    <div class="envoltura">
+        <h2 class="seccion-titulo">Sedes</h2>
+        <p class="seccion-intro">Cada sede es multigrado. El servidor y la sala de informática están en la sede principal.</p>
+        <ul class="sedes">
+            <li class="sede sede-principal"><h3>El Arrayán (principal)</h3><p>Preescolar a 5.º. Sala de informática con 15 equipos y el servidor del aula virtual.</p></li>
+            <li class="sede"><h3>La Esperanza</h3><p>Escuela multigrado de 1.º a 5.º. Se conecta a la sede principal por radioenlace.</p></li>
+            <li class="sede"><h3>Alto del Roble</h3><p>Escuela multigrado de 1.º a 5.º. Internet satelital intermitente.</p></li>
+        </ul>
+        <p class="nota">La institución y sus datos son ficticios; se usan con fines académicos.</p>
+    </div>
+</section>
 @endsection

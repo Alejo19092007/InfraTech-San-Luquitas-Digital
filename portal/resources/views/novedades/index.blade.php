@@ -1,48 +1,46 @@
 @extends('layouts.app')
-@section('titulo', 'Novedades')
+@section('titulo', 'Cartelera')
 
 @section('contenido')
-<div class="container page-intro">
-    <span class="eyebrow">Siempre al día</span>
-    <h1>Novedades de nuestra escuela</h1>
-    <p>Información importante, actividades y logros de estudiantes y familias.</p>
-</div>
+<div class="envoltura">
+    <header class="cabeza-pagina">
+        <h1>Cartelera</h1>
+        <p>Avisos, eventos y noticias de las tres sedes, del más reciente al más antiguo.</p>
+    </header>
 
-<div class="container">
-    {{-- La búsqueda y el filtro se resuelven en el servidor (PostgreSQL), así funcionan con la paginación --}}
-    <form class="toolbar" method="GET" action="{{ route('novedades.index') }}" role="search">
-        @if ($categoria)<input type="hidden" name="categoria" value="{{ $categoria }}">@endif
-        <div class="search-box">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
-            <input type="search" name="buscar" value="{{ $buscar }}" placeholder="Buscar una novedad y presiona Enter..." aria-label="Buscar novedades">
-        </div>
+    <div class="herramientas">
+        {{-- Búsqueda y filtro en el servidor (PostgreSQL): funcionan con la paginación y sin JavaScript --}}
+        <form class="buscar" method="GET" action="{{ route('novedades.index') }}" role="search">
+            @if ($categoria)<input type="hidden" name="categoria" value="{{ $categoria }}">@endif
+            <label class="oculto" for="buscar">Buscar en la cartelera</label>
+            <input id="buscar" type="search" name="buscar" value="{{ $buscar }}" placeholder="Buscar un aviso">
+            <button class="boton" type="submit">Buscar</button>
+        </form>
         @if (config('portal.edicion_abierta') || auth()->user()?->rol === 'admin')
-            <a class="btn btn-primary" href="{{ route('novedades.create') }}">＋ Nueva novedad</a>
+            <a class="boton boton-maiz" href="{{ route('novedades.create') }}">Publicar un aviso</a>
         @endif
-    </form>
+    </div>
 
-    <div class="filters" aria-label="Filtrar novedades">
-        <a class="filter-chip" href="{{ route('novedades.index', array_filter(['buscar' => $buscar])) }}" aria-pressed="{{ $categoria ? 'false' : 'true' }}">Todas</a>
+    <ul class="filtros" aria-label="Filtrar por categoría">
+        <li><a class="filtro" href="{{ route('novedades.index', array_filter(['buscar' => $buscar])) }}" @if (! $categoria) aria-current="true" @endif>Todas</a></li>
         @foreach (\App\Models\Novedad::CATEGORIAS as $cat)
-            <a class="filter-chip" href="{{ route('novedades.index', array_filter(['categoria' => $cat, 'buscar' => $buscar])) }}" aria-pressed="{{ $categoria === $cat ? 'true' : 'false' }}">{{ $cat }}</a>
+            <li><a class="filtro" href="{{ route('novedades.index', array_filter(['categoria' => $cat, 'buscar' => $buscar])) }}" @if ($categoria === $cat) aria-current="true" @endif>{{ $cat }}</a></li>
         @endforeach
-    </div>
+    </ul>
 
-    <div class="news-grid">
+    <ol class="cartelera">
         @forelse ($novedades as $novedad)
-            <article class="card news-card">
-                <div>
-                    <span class="{{ $novedad->claseEtiqueta() }}">{{ $novedad->categoria }}</span>
-                    <div class="card-meta">📅 {{ $novedad->fecha_publicacion->translatedFormat('j M Y') }}</div>
-                    <h3>{{ $novedad->titulo }}</h3>
-                    <p>{{ $novedad->resumen ?? \Illuminate\Support\Str::limit($novedad->contenido, 140) }}</p>
-                </div>
-                <div class="card-bottom"><a class="card-link" href="{{ route('novedades.show', $novedad) }}">Leer más →</a></div>
-            </article>
+            @include('partials.aviso', ['novedad' => $novedad])
         @empty
-            <div class="empty-state">No encontramos novedades con esa búsqueda. Prueba con otra palabra o categoría.</div>
+            <li class="vacio">
+                @if ($buscar !== '' || $categoria)
+                    No hay avisos que coincidan. <a href="{{ route('novedades.index') }}">Ver todos los avisos</a>.
+                @else
+                    Todavía no hay avisos publicados.
+                @endif
+            </li>
         @endforelse
-    </div>
+    </ol>
 
     {{ $novedades->links() }}
 </div>

@@ -1,57 +1,74 @@
 @extends('layouts.app')
-@section('titulo', 'Inicio')
 
 @section('contenido')
-<section class="container hero">
-    <div class="hero-content">
-        <span class="eyebrow">✦ Bienvenidos a nuestra escuela</span>
-        <h1>¡El campo también es un lugar para grandes ideas!</h1>
-        <p>Aprendemos juntos, cuidamos nuestra tierra y construimos oportunidades para todos. En el aula virtual <strong>San Luquitas Digital</strong>, los niños de 4.º y 5.º dan sus primeros pasos en programación.</p>
-        <div class="hero-actions">
-            <a class="btn btn-yellow" href="{{ config('portal.moodle_url') }}">Entrar al aula virtual (Moodle) <span aria-hidden="true">↗</span></a>
-            <a class="btn btn-light" href="{{ route('recursos.index') }}">Explorar recursos <span aria-hidden="true">→</span></a>
+<section class="portada">
+    <div class="envoltura">
+        <div>
+            <h1>Aprender en la vereda, conectados con el mundo.</h1>
+            <p class="entrada">En San Luquitas los niños de 4.º y 5.º dan sus primeros pasos en programación desde el aula virtual. Las familias siguen la vida de la escuela aquí, aunque la señal vaya y venga.</p>
+            <div class="portada-acciones">
+                <a class="boton boton-maiz" href="{{ config('portal.moodle_url') }}">Entrar al aula virtual</a>
+                <a class="boton boton-borde" href="{{ route('novedades.index') }}">Leer la cartelera</a>
+            </div>
+        </div>
+        @include('partials.foto', ['clave' => 'a-clase', 'carga' => 'eager'])
+    </div>
+</section>
+
+<nav class="zocalo" aria-label="Accesos principales">
+    <ul class="envoltura">
+        <li><a href="{{ config('portal.moodle_url') }}">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>
+            <strong>Aula virtual</strong><span>Curso "Mis primeros pasos en programación"</span></a></li>
+        <li><a href="{{ route('novedades.index') }}">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>
+            <strong>Cartelera</strong><span>Avisos, eventos y reuniones</span></a></li>
+        <li><a href="{{ route('recursos.index') }}">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h7"/></svg>
+            <strong>Recursos</strong><span>{{ $totalRecursos }} actividades para clase y casa</span></a></li>
+        <li><a href="#whatsapp">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20l1.4-4.2A8 8 0 1 1 8.2 18.6z"/><path d="M9 10h6M9 13h4"/></svg>
+            <strong>Tareas por WhatsApp</strong><span>Funciona aunque no haya señal</span></a></li>
+    </ul>
+</nav>
+
+<section class="seccion">
+    <div class="envoltura dos-columnas">
+        <header>
+            <h2 class="seccion-titulo">Cartelera</h2>
+            <p class="seccion-intro">Lo que está pasando en las tres sedes.</p>
+            <a class="ver-todo" href="{{ route('novedades.index') }}">Ver todos los avisos</a>
+        </header>
+        <ol class="cartelera">
+            @forelse ($novedades as $novedad)
+                @include('partials.aviso', ['novedad' => $novedad])
+            @empty
+                <li class="vacio">Todavía no hay avisos publicados.</li>
+            @endforelse
+        </ol>
+    </div>
+</section>
+
+<section class="seccion">
+    <div class="envoltura con-foto">
+        @include('partials.foto', ['clave' => 'sala-computo'])
+        <div>
+            <h2 class="seccion-titulo">Un aula virtual que no depende de la señal</h2>
+            <p class="seccion-intro">San Luquitas Digital vive en un servidor dentro de la escuela. Los computadores de la sala se conectan a él por la red local, así la clase sigue aunque se caiga el internet de la vereda.</p>
+            <ul class="lista-puntos">
+                <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg><span>Tres unidades: algoritmos, pensamiento computacional y programación con bloques.</span></li>
+                <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg><span>Cada estudiante tiene su usuario y avanza a su ritmo.</span></li>
+                <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg><span>Copia de seguridad automática todas las noches.</span></li>
+            </ul>
         </div>
     </div>
-    <svg class="hero-art" viewBox="0 0 260 230" aria-hidden="true"><path d="M15 210Q70 110 130 190T250 150V230H15Z" fill="#8DBB72" opacity=".7"/><path d="M0 220Q85 145 145 205T260 180V230H0Z" fill="#F2C94C"/><circle cx="190" cy="52" r="27" fill="#F2C94C"/><path d="M58 175V90m0 38q-37-2-36-39 37 0 36 39Zm0-17q37-2 36-39-37 0-36 39Z" fill="#A9D69A" stroke="#fff" stroke-width="3"/><path d="M115 190v-50m0 18q-27-2-27-29 27 0 27 29Zm0-12q28-2 28-29-28 0-28 29Z" fill="#d5e9ad" stroke="#fff" stroke-width="3"/></svg>
 </section>
 
-<section class="container section">
-    <div class="section-head">
-        <div><span class="eyebrow">Lo que pasa en San Luquitas</span><h2>Últimas novedades</h2><p>Noticias para estar conectados con nuestra comunidad.</p></div>
-        <a class="card-link" href="{{ route('novedades.index') }}">Ver todas las novedades →</a>
-    </div>
-    <div class="grid">
-        @forelse ($novedades as $novedad)
-            <article class="card">
-                <span class="{{ $novedad->claseEtiqueta() }}">{{ $novedad->categoria }}</span>
-                <div class="card-meta"><span>📅 {{ $novedad->fecha_publicacion->translatedFormat('j \d\e F \d\e Y') }}</span></div>
-                <h3>{{ $novedad->titulo }}</h3>
-                <p>{{ $novedad->resumen ?? \Illuminate\Support\Str::limit($novedad->contenido, 140) }}</p>
-                <a class="card-link" href="{{ route('novedades.show', $novedad) }}">Leer novedad →</a>
-            </article>
-        @empty
-            <div class="empty-state">Aún no hay novedades publicadas.</div>
-        @endforelse
-    </div>
-</section>
-
-<section class="container section">
-    <div class="section-head">
-        <div><span class="eyebrow">Aprender jugando</span><h2>Un mundo de recursos</h2><p>{{ $totalRecursos }} recursos para practicar en clase o en casa.</p></div>
-    </div>
-    <div class="grid">
-        <a class="card" href="{{ route('recursos.index', ['categoria' => 'Programación visual']) }}"><span class="card-icon">🧩</span><h3>Programación visual</h3><p>Descubre cómo dar instrucciones y crear historias paso a paso.</p><span class="card-link">Ir a recursos →</span></a>
-        <a class="card" href="{{ route('recursos.index', ['categoria' => 'Pensamiento computacional']) }}"><span class="card-icon">🧠</span><h3>Pensamiento computacional</h3><p>Resuelve retos usando lógica, patrones y creatividad.</p><span class="card-link">Ir a recursos →</span></a>
-        <a class="card" href="{{ route('recursos.index', ['categoria' => 'Para docentes']) }}"><span class="card-icon">🌱</span><h3>Material para docentes</h3><p>Ideas y guías para acompañar el aprendizaje.</p><span class="card-link">Ir a recursos →</span></a>
-    </div>
-</section>
-
-<section class="container section">
-    <div class="notice">
-        <span class="card-icon">💬</span>
-        <div>
-            <strong>¿No tienes internet? ¡No te quedes por fuera!</strong>
-            <p>Estudiantes, acudientes y profesores pueden registrar las tareas por WhatsApp escribiendo al número institucional <strong>{{ config('portal.whatsapp') }}</strong>. Si no hay señal, el mensaje se envía solo cuando vuelva la conexión.</p>
+<section class="seccion" id="whatsapp">
+    <div class="envoltura">
+        <div class="whatsapp">
+            <h2>¿Sin internet en la casa? Igual puedes registrar las tareas.</h2>
+            <p>Estudiantes, acudientes y profesores escriben al número de la escuela, <span class="numero">{{ config('portal.whatsapp') }}</span>. Si el celular no tiene señal, WhatsApp guarda el mensaje y lo envía apenas vuelva la conexión. La tarea aparece en el portal y el bot confirma que quedó registrada.</p>
         </div>
     </div>
 </section>
