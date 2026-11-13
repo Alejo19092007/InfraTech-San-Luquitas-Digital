@@ -327,6 +327,48 @@ ping portal.sanluquitas.local     # responde 192.168.1.50
 ```
 Con el DNS del router todos los dispositivos (incluidos celulares) resuelven los nombres sin tocar cada equipo.
 
+## 14. Segundo adaptador NAT: el servidor funciona en cualquier red
+
+**Problema.** La IP fija `192.168.1.50` solo sirve en la red donde se configuró. En otra red (la de la universidad, `172.17.96.0/19`) la VM quedó sin internet y sin acceso por SSH.
+
+**Solución.** Se conserva el adaptador puente (`enp0s3`, acceso desde otros dispositivos de la LAN) y se agrega un **Adaptador 2 en NAT** (`enp0s8`) con reenvío de puertos solo hacia `127.0.0.1` del equipo anfitrión:
+
+| Regla | Anfitrión | Invitado |
+|---|---|---|
+| ssh | `127.0.0.1:2222` | `10.0.3.15:22` |
+| http | `127.0.0.1:80` | `10.0.3.15:80` |
+| https | `127.0.0.1:443` | `10.0.3.15:443` |
+
+```powershell
+# En el anfitrión (PowerShell), con la VM encendida — 43-nat-reenvio-puertos.png
+$vbm = "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
+& $vbm controlvm sanluquitas-srv natpf2 "ssh,tcp,127.0.0.1,2222,10.0.3.15,22"
+& $vbm controlvm sanluquitas-srv natpf2 "http,tcp,127.0.0.1,80,10.0.3.15,80"
+& $vbm controlvm sanluquitas-srv natpf2 "https,tcp,127.0.0.1,443,10.0.3.15,443"
+ssh -p 2222 sladmin@127.0.0.1        # 45-ssh-por-nat-2222.png
+```
+```bash
+# En el servidor — 46-netplan-nat-y-metricas.png
+sudo tee /etc/netplan/60-nat.yaml > /dev/null << 'EOF'
+network:
+  version: 2
+  ethernets:
+    enp0s8:
+      dhcp4: true
+      dhcp4-overrides:
+        route-metric: 50        # salida a internet preferida: funciona en cualquier red
+EOF
+# La ruta de la LAN de casa queda como respaldo (metric 200)
+sudo sed -i 's/via: 192.168.1.1$/via: 192.168.1.1\n          metric: 200/' /etc/netplan/50-cloud-init.yaml
+sudo chmod 600 /etc/netplan/*.yaml && sudo netplan generate && sudo netplan apply
+sudo ufw allow from 10.0.3.0/24 to any port 22 proto tcp comment 'SSH NAT'
+ip route | grep default && ping -c 3 google.com     # 47-rutas-y-internet-por-nat.png
+```
+
+**Error encontrado** (`44-nat-diagnostico-red-10-0-3.png`): se asignó a `enp0s8` la IP `10.0.2.15` y el `ping 10.0.2.2` respondía *Destination Host Unreachable*. VirtualBox usa una red NAT distinta por adaptador: `10.0.2.0/24` para el Adaptador 1 y **`10.0.3.0/24` para el Adaptador 2**. Se corrigió la IP, la regla de UFW y el reenvío de puertos.
+
+En el equipo anfitrión, el archivo `hosts` apunta a `127.0.0.1` (`moodle.sanluquitas.local portal.sanluquitas.local`); los demás dispositivos de la LAN siguen usando `192.168.1.50`.
+
 ## Pendiente
 - [ ] Levantar el stack completo con `compose.yaml` (Alejandro Moreno) y verificar Moodle y Portal reales
 - [ ] Pruebas: acceso desde otro dispositivo (celular), reinicio con todos los contenedores, `ss -tulpn` y `nmap`
