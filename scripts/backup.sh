@@ -40,9 +40,10 @@ done
 # 2) Volúmenes de archivos (se copian en modo solo lectura)
 for vol in moodledata laravel_storage; do
     if docker volume inspect "${PROYECTO}_${vol}" >/dev/null 2>&1; then
+        # tar escribe en la salida estándar: el archivo lo crea sladmin, no root
         docker run --rm --user 0 --entrypoint tar \
-            -v "${PROYECTO}_${vol}:/datos:ro" -v "$DEST:/respaldo" \
-            "$IMAGEN_TAR" --numeric-owner -czf "/respaldo/$vol.tar.gz" -C /datos .
+            -v "${PROYECTO}_${vol}:/datos:ro" \
+            "$IMAGEN_TAR" --numeric-owner -czf - -C /datos . > "$DEST/$vol.tar.gz"
         log "  Volumen $vol → $vol.tar.gz ($(du -h "$DEST/$vol.tar.gz" | cut -f1))"
     else
         log "  Volumen $vol no existe todavía: se omite"
