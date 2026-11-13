@@ -9,9 +9,11 @@
 FROM composer:2 AS vendor
 WORKDIR /app
 COPY composer.json composer.lock* ./
-# --no-dev: sin herramientas de desarrollo; --no-scripts: artisan aún no existe
+# --no-dev: sin herramientas de desarrollo; --no-scripts: artisan aún no existe.
+# Las extensiones (intl, redis…) se instalan en la etapa 2, por eso se ignoran aquí;
+# la versión de PHP NO se ignora: composer.json fija platform.php = 8.3.36.
 RUN composer install --no-dev --no-interaction --no-progress --no-scripts \
-        --prefer-dist --no-autoloader --ignore-platform-reqs
+        --prefer-dist --no-autoloader --ignore-platform-req=ext-*
 COPY . .
 RUN composer dump-autoload --no-dev --optimize --classmap-authoritative
 
