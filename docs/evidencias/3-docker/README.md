@@ -33,3 +33,30 @@ docker compose up -d --build
 | `laravel-app`, `queue-worker`, `scheduler`, `nginx` | Iniciados |
 
 Los servicios de Moodle (perfil `moodle`) y `cloudflared` (perfil `tunnel`) no se levantan hasta que Julian y Samuel integren su parte.
+
+### Error encontrado y solución — `03-error-dependencias-php-8-4.png`
+**Síntoma:** `laravel-app`, `queue-worker` y `scheduler` quedaban en `Restarting (255)`. El log mostraba:
+`Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.4.1". You are running 8.3.36.`
+
+**Causa:** la etapa de construcción usa la imagen `composer:2`, que trae una PHP más nueva que la imagen final. Con `--ignore-platform-reqs`, Composer resolvía las dependencias para *su* PHP e instalaba paquetes que exigen PHP 8.4.
+
+**Solución:** fijar en `portal/composer.json` la plataforma de destino y dejar de ignorar la versión de PHP (solo se ignoran las extensiones, que se instalan en la etapa final):
+```json
+"config": { "platform": { "php": "8.3.36" } }
+```
+```dockerfile
+RUN composer install --no-dev ... --ignore-platform-req=ext-*
+```
+```bash
+git pull && docker compose up -d --build
+```
+
+### Arranque correcto — `04-portal-arriba-migraciones-y-seeders.png`
+```bash
+docker compose ps                         # los 6 servicios en "Up"; postgres y redis "healthy"
+docker compose logs laravel-app --tail=30 # migraciones, seeders, cachés y "ready to handle connections"
+```
+El aviso `'user' directive is ignored when FPM is not running as root` confirma que PHP-FPM corre como `www-data`, sin privilegios de root.
+
+### Portal en el navegador — `05-portal-inicio-https.png`
+`https://portal.sanluquitas.local` muestra la página de inicio con las últimas novedades leídas de PostgreSQL, el acceso a Moodle y los recursos. Bootstrap se sirve desde el propio servidor, así que la página carga aunque no haya internet.
