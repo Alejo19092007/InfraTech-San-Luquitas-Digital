@@ -354,12 +354,12 @@ p { margin: 0 0 1em; }
 
 /* Accesos rápidos: colores más claros en modo oscuro para que el título se lea */
 :root.oscuro .accesos a { --c: #8ab4f0; }
-:root.oscuro .acc-verde { --c: #6fcf97; }
-:root.oscuro .acc-amarillo { --c: #f5b700; }
-:root.oscuro .acc-morado { --c: #c3a8f5; }
+:root.oscuro .accesos a.acc-verde { --c: #6fcf97; }
+:root.oscuro .accesos a.acc-amarillo { --c: #f5b700; }
+:root.oscuro .accesos a.acc-morado { --c: #c3a8f5; }
 @media (prefers-color-scheme: dark) {
   :root:not(.claro) .accesos a { --c: #8ab4f0; }
-  :root:not(.claro) .acc-verde { --c: #6fcf97; }
-  :root:not(.claro) .acc-amarillo { --c: #f5b700; }
-  :root:not(.claro) .acc-morado { --c: #c3a8f5; }
+  :root:not(.claro) .accesos a.acc-verde { --c: #6fcf97; }
+  :root:not(.claro) .accesos a.acc-amarillo { --c: #f5b700; }
+  :root:not(.claro) .accesos a.acc-morado { --c: #c3a8f5; }
 }
