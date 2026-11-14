@@ -351,3 +351,15 @@ p { margin: 0 0 1em; }
 .banner::after { background: linear-gradient(90deg, rgb(8 24 48 / .78) 0%, rgb(8 24 48 / .45) 42%, rgb(8 24 48 / 0) 75%), linear-gradient(0deg, rgb(8 24 48 / .35), rgb(8 24 48 / 0) 40%); }
 .banner .banner-credito { top: auto; bottom: .6rem; text-shadow: 0 1px 2px rgb(0 0 0 / .7); }
 .banner-credito a { color: #fff; }
+
+/* Accesos rápidos: colores más claros en modo oscuro para que el título se lea */
+:root.oscuro .accesos a { --c: #8ab4f0; }
+:root.oscuro .acc-verde { --c: #6fcf97; }
+:root.oscuro .acc-amarillo { --c: #f5b700; }
+:root.oscuro .acc-morado { --c: #c3a8f5; }
+@media (prefers-color-scheme: dark) {
+  :root:not(.claro) .accesos a { --c: #8ab4f0; }
+  :root:not(.claro) .acc-verde { --c: #6fcf97; }
+  :root:not(.claro) .acc-amarillo { --c: #f5b700; }
+  :root:not(.claro) .acc-morado { --c: #c3a8f5; }
+}
