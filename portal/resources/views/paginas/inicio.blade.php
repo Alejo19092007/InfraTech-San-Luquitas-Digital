@@ -80,7 +80,7 @@
             </div>
             <div class="chat" aria-label="Ejemplo de conversación">
                 <p class="chat-yo">tarea 5B matemáticas guía de fracciones para el viernes</p>
-                <p class="chat-bot">Tarea registrada para 5.º B, Matemáticas: “guía de fracciones”, entrega viernes 21 de noviembre.</p>
+                <p class="chat-bot">Tarea registrada para 5.º B, Matemáticas: “guía de fracciones”, entrega viernes 20 de noviembre.</p>
             </div>
         </div>
     </div>
