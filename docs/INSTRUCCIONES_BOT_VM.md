@@ -3,19 +3,20 @@
 **Para:** quien tenga la máquina virtual `sanluquitas-srv` y vaya a subir los cambios (hoy, Alejandro Jimenez).
 **De:** Samuel Guzmán (bloque 4). El bot se desarrolla fuera de la VM porque no tenemos una copia del `.ova`; todo se arma en la máquina que se va a entregar.
 
-> **Estado al 12/11/2026:** estos pasos **todavía no se han probado en la VM**. Lo único probado es el intérprete de comandos (`portal/app/Bot/`, 18 pruebas en verde). Si un paso falla o hay que cambiarlo, corrige este archivo.
+> **Estado al 14/11/2026:** el código del bot ya está completo (login con roles, panel `/tareas`, vinculación, webhook, colas, recordatorios y simulador) y tiene pruebas automáticas. Lo que **todavía no se ha probado en la VM** es la parte que depende de internet: ngrok y la API de Meta. Si un paso falla o hay que cambiarlo, corrige este archivo.
 
 ## Qué está listo y qué falta
 
 | Pieza | Estado | Responsable |
 |---|---|---|
 | Entrada del webhook en Nginx (`nginx:8081`, solo `/webhook/whatsapp`) | Lista | Alejandro Jimenez |
-| Intérprete de comandos del bot | Listo y probado (PR #2) | Samuel Guzmán |
-| Proyecto Laravel en `portal/` y `compose.yaml` | **Falta** — bloquea todo lo demás | Alejandro Moreno |
-| Webhook, colas, login, panel `/tareas` y vinculación | Falta (depende de lo anterior) | Samuel Guzmán |
-| App de Meta y cuenta de ngrok | Falta | Samuel Guzmán |
+| Proyecto Laravel en `portal/`, `compose.yaml`, servicio `ngrok`, `queue-worker` y `scheduler` | Listo | Alejandro Moreno |
+| Intérprete de comandos del bot | Listo y probado | Samuel Guzmán |
+| Login con roles, gestión de usuarios, panel `/tareas` y vinculación del número | Listo (rama `samuel-guzman/usuarios-tareas-bot`) | Samuel Guzmán |
+| Webhook `GET/POST /webhook/whatsapp` con firma, jobs `whatsapp-in` / `whatsapp-out`, recordatorio diario | Listo | Samuel Guzmán |
+| Cuenta de ngrok (dominio fijo) y app de Meta con el número de prueba | **Falta** (hay que hacerlo con las cuentas reales) | Samuel Guzmán |
 
-Los pasos 1 a 3 se pueden hacer ya. Del 4 en adelante hay que esperar al `compose.yaml` y al código del webhook.
+Los pasos 1 a 3 y 5 se pueden hacer ya. Los pasos 4 y 6 necesitan la cuenta de ngrok y la app de Meta.
 
 ---
 
@@ -70,7 +71,7 @@ git status --short   # .env NO debe aparecer (está en .gitignore)
 
 ## Paso 4 — Servicio `ngrok` en el `compose.yaml`
 
-*(Cuando exista el `compose.yaml`. Lo agrega Alejandro Moreno o se le propone por PR.)*
+El servicio ya está en el `compose.yaml` (perfil `tunnel`, no arranca solo). Para referencia, esto es lo que hace:
 
 ```yaml
   ngrok:
@@ -88,24 +89,48 @@ git status --short   # .env NO debe aparecer (está en .gitignore)
 - Si el contenedor no acepta `--url`, revisar `docker compose run --rm ngrok http --help` (en versiones anteriores la opción era `--domain`).
 
 ```bash
-docker compose up -d ngrok
+docker compose --profile tunnel up -d ngrok
 docker compose logs --tail=20 ngrok      # debe decir que el túnel está en línea, sin errores de autenticación
 ```
 
 ## Paso 5 — Servicios del bot
 
-*(Cuando exista el código del webhook.)* Usan la misma imagen que `laravel-app`:
+Usan la misma imagen que `laravel-app` y ya están en el `compose.yaml`:
 
-| Servicio | Comando |
+| Servicio | Qué hace |
 |---|---|
-| `queue-worker` | `php artisan queue:work redis --queue=whatsapp-in,whatsapp-out --tries=5` |
-| `scheduler` | `php artisan schedule:work` |
+| `queue-worker` | Procesa `whatsapp-in` (interpreta el mensaje) y `whatsapp-out` (responde con reintentos y espera creciente) |
+| `scheduler` | Cada día a las 6:30 a. m. (hora de Bogotá) avisa por WhatsApp de las tareas que vencen hoy o mañana, y a las 3:00 a. m. borra códigos de vinculación vencidos |
 
 ```bash
+git switch main && git pull                      # cuando la rama del bot ya esté unida a main
+docker compose build laravel-app                 # reconstruye la imagen con el código nuevo
 docker compose up -d laravel-app queue-worker scheduler
-docker compose exec laravel-app php artisan migrate --force
 docker compose ps        # todos "running"; postgres y redis "healthy"
 ```
+
+Al arrancar, `laravel-app` aplica las migraciones y carga las **cuentas ficticias** de demostración (el mismo arranque que ya cargaba las noticias):
+
+| Rol | Correo | Número ficticio (ya verificado) |
+|---|---|---|
+| Administración | `secretaria@sanluquitas.local` | — |
+| Docente (grados 4 y 5) | `docente.martha@sanluquitas.local` | +573000000011 |
+| Docente (grados 1 a 3) | `docente.jorge@sanluquitas.local` | +573000000012 |
+| Estudiante, grado 5 | `est.ana@sanluquitas.local` | +573000000001 |
+| Estudiante, grado 4 | `est.juan@sanluquitas.local` | +573000000002 |
+| Acudiente de Ana y Sofía | `acudiente.luz@sanluquitas.local` | +573000000021 |
+
+La contraseña de todas es la de `PORTAL_CLAVE_DEMO` del `.env` (si está vacía, `SanLuquitas#2026`). Para usar el bot con un celular real, cada persona entra al portal → **Mi WhatsApp**, escribe su número y envía el código por WhatsApp.
+
+**Probar el bot sin Meta ni internet** (sirve de respaldo para la demostración):
+
+```bash
+docker compose exec -e HOME=/tmp laravel-app php artisan whatsapp:simular +573000000001 "TAREA Matemáticas | mañana | Página 32"
+docker compose exec -e HOME=/tmp laravel-app php artisan whatsapp:simular +573000000001 "MIS TAREAS"
+docker compose exec -e HOME=/tmp laravel-app php artisan tareas:recordatorios --simular
+```
+
+Las pruebas automáticas (en el contenedor, PHP 8.3) se corren con `docker compose exec laravel-app php artisan test`; las dependencias de desarrollo no vienen en la imagen de producción, así que si falla por `phpunit`, se corren en el equipo de desarrollo con `composer install && php artisan test`.
 
 ## Paso 6 — Registrar el webhook en Meta
 
@@ -126,13 +151,13 @@ Al guardar, Meta hace una petición de verificación; si el servidor responde bi
 curl -s "https://$NGROK_DOMAIN/webhook/whatsapp?hub.mode=subscribe&hub.verify_token=$WHATSAPP_VERIFY_TOKEN&hub.challenge=hola123"
 
 # 2. El resto del portal NO es visible por el túnel (debe dar 404)
-curl -s -o /dev/null -w '%{http_code}\n' "https://$NGROK_DOMAIN/login"
+curl -s -o /dev/null -w '%{http_code}\n' "https://$NGROK_DOMAIN/ingresar"
 
-# 3. Una petición sin firma válida se rechaza (debe dar 401 o 403)
+# 3. Una petición sin firma válida se rechaza (debe dar 403)
 curl -s -o /dev/null -w '%{http_code}\n' -X POST "https://$NGROK_DOMAIN/webhook/whatsapp" -d '{}'
 
-# 4. Las pruebas del intérprete pasan dentro del contenedor (PHP 8.3)
-docker compose exec laravel-app php artisan test --filter=InterpreteComandosTest
+# 4. El bot responde sin pasar por Meta (debe mostrar la lista de comandos)
+docker compose exec -e HOME=/tmp laravel-app php artisan whatsapp:simular +573000000001 AYUDA
 
 # 5. Cola de entrada (0 cuando todo está procesado)
 docker compose exec redis redis-cli -a "$REDIS_PASSWORD" llen queues:whatsapp-in
@@ -143,6 +168,8 @@ docker compose exec redis redis-cli -a "$REDIS_PASSWORD" llen queues:whatsapp-in
 Guardarlas en `docs/evidencias/4-bot/` (capturas de la terminal o del celular, sin que se vean tokens):
 
 - [ ] `docker compose ps` con `ngrok`, `queue-worker` y `scheduler` en ejecución
+- [ ] Login y panel `/tareas` con cada rol (el estudiante solo ve lo suyo; el acudiente, lo de sus hijos; el docente, sus grados)
+- [ ] Pantalla «Mi WhatsApp» con el código y la respuesta «Número vinculado»
 - [ ] Webhook verificado (en verde) en la consola de Meta
 - [ ] Las comprobaciones 1, 2 y 3 del paso 7
 - [ ] **Modo avión:** enviar `TAREA ...` con el celular en modo avión → quitarlo → la tarea aparece en `/tareas`
@@ -162,6 +189,6 @@ Guardarlas en `docs/evidencias/4-bot/` (capturas de la terminal o del celular, s
 |---|---|
 | `ngrok` se reinicia sin parar | `docker compose logs ngrok`: token mal copiado o dominio que no es de esa cuenta |
 | Meta no verifica el webhook | Que el paso 7.1 devuelva `hola123`; que `WHATSAPP_VERIFY_TOKEN` sea igual en `.env` y en Meta; `docker compose logs nginx laravel-app` |
-| Llegan mensajes pero no se crean tareas | `docker compose logs queue-worker`; que el número esté vinculado; `llen queues:whatsapp-in` |
+| Llegan mensajes pero no se crean tareas | `docker compose logs queue-worker`; que el número esté vinculado (portal → Mi WhatsApp); `llen queues:whatsapp-in`; la tabla `mensajes_whatsapp` guarda el estado de cada mensaje (`recibido`, `procesado`, `rechazado`, `enviado`, `fallido`) |
 | El bot no responde | Token de Meta vencido (dura 24 h) o el celular no está en la lista de destinatarios |
 | 502 en el webhook | `laravel-app` no está en ejecución o no está en la red `frontend` |

@@ -58,12 +58,26 @@
             <a href="{{ route('institucional') }}" @if (request()->routeIs('institucional')) aria-current="page" @endif>Nuestra institución</a>
             <a href="{{ route('novedades.index') }}" @if (request()->routeIs('novedades.*')) aria-current="page" @endif>Noticias</a>
             <a href="{{ route('recursos.index') }}" @if (request()->routeIs('recursos.*')) aria-current="page" @endif>Recursos educativos</a>
-            {{-- Samuel agrega aquí "Tareas" e "Iniciar sesión" con @push('menu') --}}
+            @auth
+                <a href="{{ route('tareas.index') }}" @if (request()->routeIs('tareas.*')) aria-current="page" @endif>Tareas</a>
+                <a href="{{ route('vincular') }}" @if (request()->routeIs('vincular*')) aria-current="page" @endif>Mi WhatsApp</a>
+                @if (auth()->user()->esRol('admin'))
+                    <a href="{{ route('usuarios.index') }}" @if (request()->routeIs('usuarios.*')) aria-current="page" @endif>Usuarios</a>
+                @endif
+            @endauth
             @stack('menu')
             <a class="menu-aula" href="{{ config('portal.moodle_url') }}">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>
                 Aula virtual
             </a>
+            @auth
+                <form class="menu-sesion" method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit">Salir <span class="menu-nombre">({{ auth()->user()->primerNombre() }})</span></button>
+                </form>
+            @else
+                <a class="menu-ingreso" href="{{ route('login') }}" @if (request()->routeIs('login')) aria-current="page" @endif>Iniciar sesión</a>
+            @endauth
         </nav>
     </div>
 </div>

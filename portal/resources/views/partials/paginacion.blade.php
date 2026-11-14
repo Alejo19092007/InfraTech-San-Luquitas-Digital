@@ -1,5 +1,5 @@
 @if ($paginator->hasPages())
-<nav class="paginacion" aria-label="Páginas de noticias">
+<nav class="paginacion" aria-label="Páginas">
     @if ($paginator->onFirstPage())
         <span class="desactivado" aria-hidden="true">Anterior</span>
     @else
