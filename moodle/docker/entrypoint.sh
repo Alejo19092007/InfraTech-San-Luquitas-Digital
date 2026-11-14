@@ -34,6 +34,7 @@ global \$CFG;
 \$CFG->dataroot  = '${DATOS}';
 \$CFG->admin     = 'admin';
 \$CFG->directorypermissions = 02777;
+\$CFG->noemailever = true;   // sin servidor de correo en el laboratorio
 require_once(__DIR__ . '/lib/setup.php');
 PHP
 
