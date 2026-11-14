@@ -156,10 +156,21 @@ services:
       context: ./moodle
     image: sanluquitas/moodle:1.0
     restart: unless-stopped
+    environment: &moodle-env
+      MOODLE_URL: ${MOODLE_URL}
+      MOODLE_DB_PASSWORD: ${MOODLE_DB_PASSWORD}
+      MOODLE_ADMIN_PASSWORD: ${MOODLE_ADMIN_PASSWORD:-}
+      MOODLE_USERS_PASSWORD: ${MOODLE_USERS_PASSWORD:-}
     volumes:
       - moodle_code:/var/www/moodle
       - moodledata:/var/www/moodledata
-    networks: [frontend, backend]
+    networks: [frontend, backend, egress]   # egress: paquete de idioma español en la instalación
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /var/www/moodledata/.eva-creada"]
+      interval: 15s
+      timeout: 5s
+      retries: 40
+      start_period: 60s
     depends_on:
       postgres:
         condition: service_healthy
@@ -168,7 +179,8 @@ services:
     profiles: [moodle]
     image: sanluquitas/moodle:1.0
     restart: unless-stopped
-    command: ["sh", "-c", "while true; do php /var/www/moodle/admin/cli/cron.php; sleep 60; done"]
+    command: ["moodle-cron"]          # el entrypoint ejecuta admin/cli/cron.php cada minuto
+    environment: *moodle-env
     volumes:
       - moodle_code:/var/www/moodle
       - moodledata:/var/www/moodledata
