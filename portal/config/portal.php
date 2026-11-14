@@ -13,8 +13,11 @@ return [
     'moodle_url' => env('MOODLE_URL', 'https://moodle.sanluquitas.local'),
     'whatsapp' => env('PORTAL_WHATSAPP', '300 000 0000'),   // número ficticio de demostración
 
-    // true mientras no exista el login con roles (ver PuedeEditarContenido)
-    'edicion_abierta' => (bool) env('PORTAL_EDICION_ABIERTA', true),
+    // Contraseña de las cuentas ficticias de demostración (UsuarioSeeder). Cámbiala en el .env.
+    'clave_demo' => env('PORTAL_CLAVE_DEMO') ?: 'SanLuquitas#2026',
+
+    // Las noticias solo las edita el rol admin (ver PuedeEditarContenido). true las deja abiertas, solo para demostraciones.
+    'edicion_abierta' => (bool) env('PORTAL_EDICION_ABIERTA', false),
 
     /*
      | Fotografías ilustrativas. La institución es ficticia: las fotos son de zonas
