@@ -15,6 +15,7 @@ class NovedadSeeder extends Seeder
             'Nueva sala de informática en la sede principal',
             'Jornada de mingas por la escuela',
             'Taller para docentes: enseñar con Scratch',
+            'Prueba de registro desde el portal',   // novedad de prueba de una verificación
         ]);
         $habia = $antiguas->exists();
         $antiguas->delete();

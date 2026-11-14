@@ -6,7 +6,7 @@ return [
     'lema' => 'Educación rural con calidad humana y tecnología',
     'municipio' => 'Vereda El Arrayán, zona rural',
     // Datos de contacto ficticios (caso académico)
-    'direccion' => 'Sede principal: vereda El Arrayán, km 12 vía al casco urbano',
+    'direccion' => 'Vereda El Arrayán, km 12 vía al casco urbano',
     'telefono' => '(607) 000 0000',
     'correo' => 'secretaria@sanluquitas.local',
     'horario' => 'Lunes a viernes, 7:00 a. m. a 1:00 p. m.',
@@ -26,8 +26,8 @@ return [
     // Foto ilustrativa que acompaña cada noticia según su categoría
     'foto_por_categoria' => [
         'General' => 'paisaje',
-        'Académico' => 'estudiantes',
-        'Eventos' => 'a-clase',
+        'Académico' => 'a-clase',
+        'Eventos' => 'estudiantes',
         'Comunidad' => 'vereda',
         'Tecnología' => 'sala-computo',
     ],

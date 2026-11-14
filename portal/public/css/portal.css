@@ -363,3 +363,6 @@ p { margin: 0 0 1em; }
   :root:not(.claro) .accesos a.acc-amarillo { --c: #f5b700; }
   :root:not(.claro) .accesos a.acc-morado { --c: #c3a8f5; }
 }
+
+/* Todas las fotos de las tarjetas con la misma proporción (el enlace es inline y ignoraba aspect-ratio) */
+.noticia-imagen { display: block; overflow: hidden; }
