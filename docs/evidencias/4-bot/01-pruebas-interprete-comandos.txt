@@ -1,0 +1,34 @@
+EVIDENCIA 01 - Pruebas unitarias del intérprete de comandos del bot
+Fecha de ejecución: 2026-11-12 18:17 -05
+Entorno: equipo de desarrollo (WSL), PHP 8.5.4, PHPUnit instalado en carpeta temporal
+Comando: vendor/bin/phpunit --testdox portal/tests/Unit/Bot
+------------------------------------------------------------
+PHPUnit 11.5.57 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.5.4
+
+..................                                                18 / 18 (100%)
+
+Time: 00:00.004, Memory: 8.00 MB
+
+Interprete Comandos (Tests\Unit\Bot\InterpreteComandos)
+ ✔ Tarea con materia fecha y descripcion
+ ✔ Tarea en minusculas y con espacios de mas
+ ✔ Acudiente indica el hijo con arroba
+ ✔ Profesor asigna a un grado
+ ✔ Grado fuera de rango es invalido
+ ✔ La descripcion puede tener barras
+ ✔ Tarea incompleta explica el formato
+ ✔ Materia o descripcion demasiado largas
+ ✔ Fechas con palabras
+ ✔ Fechas con numeros
+ ✔ Fecha sin anio de enero pasa al anio siguiente
+ ✔ Fecha pasada es invalida
+ ✔ Fecha inexistente lejana o ilegible es invalida
+ ✔ Mis tareas
+ ✔ Hecha
+ ✔ Vincular
+ ✔ Ayuda
+ ✔ Mensaje que no es un comando
+
+OK (18 tests, 101 assertions)
