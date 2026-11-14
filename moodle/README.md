@@ -72,4 +72,4 @@ La instalación se hace sola. Está lista cuando existe `/var/www/moodledata/.ev
 
 ## Respaldo
 
-`scripts/backup.sh` ya incluye la base `moodle_db` y los volúmenes `moodle_code` y `moodledata`.
+`scripts/backup.sh` ya incluye la base `moodle_db`, el volumen `moodledata` y el `config.php` cifrado. El código de Moodle no se respalda porque se reconstruye desde la imagen.
