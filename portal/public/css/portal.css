@@ -366,3 +366,5 @@ p { margin: 0 0 1em; }
 
 /* Todas las fotos de las tarjetas con la misma proporción (el enlace es inline y ignoraba aspect-ratio) */
 .noticia-imagen { display: block; overflow: hidden; }
+
+.recurso .pie { align-items: center; }
