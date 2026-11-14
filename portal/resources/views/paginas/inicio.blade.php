@@ -9,15 +9,14 @@
         <img src="{{ asset($portada['archivo']) }}" alt="" width="1280" height="850" fetchpriority="high">
     @endif
     <div class="envoltura">
-        <span class="banner-lema">{{ config('portal.lema') }}</span>
-        <h1>Bienvenidos a la {{ config('portal.institucion') }}</h1>
-        <p>Preescolar y básica primaria en tres sedes rurales. Nuestros estudiantes de 4.º y 5.º aprenden a programar en el aula virtual San Luquitas Digital.</p>
+        <h1>{{ config('portal.institucion') }}</h1>
+        <p>Preescolar y primaria en la vereda El Arrayán. Este año los grados 4.º y 5.º empezaron a programar en el aula virtual.</p>
         <div class="banner-acciones">
             <a class="boton boton-amarillo" href="{{ config('portal.moodle_url') }}">Ingresar al aula virtual</a>
             <a class="boton boton-blanco" href="{{ route('institucional') }}">Conocer la institución</a>
         </div>
     </div>
-    @if (file_exists(public_path($portada['archivo'])))
+    @if (file_exists(public_path($portada['archivo'])) && $portada['autor'])
         <p class="banner-credito">Foto: <a href="{{ $portada['fuente'] }}" rel="noopener">{{ $portada['autor'] }}</a>, {{ $portada['licencia'] }}</p>
     @endif
 </section>
@@ -58,9 +57,9 @@
             <h2 class="seccion-titulo">San Luquitas Digital</h2>
             <p class="seccion-intro">El aula virtual funciona en un servidor dentro de la escuela. Los computadores de la sala se conectan por la red local, así la clase sigue aunque se caiga el internet de la vereda.</p>
             <ul class="cifras">
-                <li><strong>186</strong><span>estudiantes</span></li>
-                <li><strong>12</strong><span>docentes</span></li>
-                <li><strong>3</strong><span>sedes rurales</span></li>
+                <li><strong>68</strong><span>estudiantes</span></li>
+                <li><strong>6</strong><span>docentes</span></li>
+                <li><strong>12</strong><span>computadores en la sala</span></li>
             </ul>
             <ul class="lista-puntos">
                 <li>Curso “Mis primeros pasos en programación” para 4.º y 5.º.</li>
@@ -93,7 +92,7 @@
         <ul class="enlaces">
             <li><a href="https://www.mineducacion.gov.co" rel="noopener"><strong>Ministerio de Educación Nacional</strong><small>mineducacion.gov.co</small></a></li>
             <li><a href="https://www.colombiaaprende.edu.co" rel="noopener"><strong>Colombia Aprende</strong><small>Contenidos educativos digitales</small></a></li>
-            <li><a href="https://www.computadoresparaeducar.gov.co" rel="noopener"><strong>Computadores para Educar</strong><small>Tecnología para las sedes educativas</small></a></li>
+            <li><a href="https://www.computadoresparaeducar.gov.co" rel="noopener"><strong>Computadores para Educar</strong><small>Tecnología para las escuelas</small></a></li>
             <li><a href="https://scratch.mit.edu" rel="noopener"><strong>Scratch</strong><small>Programación con bloques</small></a></li>
         </ul>
     </div>
