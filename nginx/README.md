@@ -29,7 +29,7 @@ Todo lo demás que llegue por `enp0s3` hacia un contenedor se descarta. El tráf
      - "80:80"
      - "443:443"
    ```
-2. `postgres`, `redis`, `moodle`, `laravel-app`, `queue-worker`, `scheduler`, `moodle-cron` y `cloudflared` **no llevan `ports:`**. Se comunican por las redes internas usando el nombre del servicio.
+2. `postgres`, `redis`, `moodle`, `laravel-app`, `queue-worker`, `scheduler`, `moodle-cron` y `ngrok` **no llevan `ports:`**. Se comunican por las redes internas usando el nombre del servicio.
 3. Si para depurar hace falta abrir un puerto (por ejemplo `5432`), quedará bloqueado desde la LAN por la regla anterior. Usar `docker compose exec` en su lugar.
 
 ## Decisión 2 — Montajes del servicio `nginx`
@@ -51,7 +51,7 @@ Las rutas de destino deben coincidir con las que usan los contenedores PHP-FPM (
 | Servicio Laravel (PHP-FPM) | `laravel-app:9000` |
 | Red compartida con Nginx | `frontend` |
 | Sitios | `moodle.sanluquitas.local`, `portal.sanluquitas.local` |
-| Webhook WhatsApp | `cloudflared` → `http://nginx:8081/webhook/whatsapp` → Laravel (ver Decisión 5) |
+| Webhook WhatsApp | `ngrok` → `http://nginx:8081/webhook/whatsapp` → Laravel (ver Decisión 5) |
 | Imagen | `nginx:1.27-alpine` |
 
 Si alguno de estos nombres cambia en el compose, avisar para ajustar `nginx/conf.d/*.conf`.
@@ -65,11 +65,11 @@ Si el equipo instala **Moodle 5.0**, se cambia esa línea a `root /var/www/moodl
 
 ## Decisión 5 — Webhook de WhatsApp aislado en un puerto interno
 
-`cloudflared` no entra por el 443 público del portal. Nginx tiene un bloque aparte en el **puerto 8081**, que **no se publica** al host: solo es alcanzable dentro de la red Docker `frontend`. Ese bloque solo responde `/webhook/whatsapp` (GET de verificación y POST de eventos de Meta) y devuelve 404 para cualquier otra ruta.
+`ngrok` no entra por el 443 público del portal. Nginx tiene un bloque aparte en el **puerto 8081**, que **no se publica** al host: solo es alcanzable dentro de la red Docker `frontend`. Ese bloque solo responde `/webhook/whatsapp` (GET de verificación y POST de eventos de Meta) y devuelve 404 para cualquier otra ruta.
 
 Así, lo único del sistema expuesto a internet es el webhook; el portal, el login y Moodle siguen siendo solo de la LAN.
 
-Configuración de ingreso del túnel (Samuel Guzmán): `service: http://nginx:8081`.
+Comando del túnel (Samuel Guzmán): `ngrok http nginx:8081 --url=<NGROK_DOMAIN>`.
 
 ## Archivos de esta carpeta
 
