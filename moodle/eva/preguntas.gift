@@ -1,0 +1,29 @@
+// Plan B: si el script no pudo crear las preguntas, importar este archivo en
+// Cuestionario final > Preguntas > (menú) Importar > formato GIFT.
+::Pregunta 1::¿Qué es un algoritmo? {
+=Una lista de pasos en orden para lograr algo
+~Un tipo de computador
+~Un juego de internet
+~Un dibujo
+}
+
+::Pregunta 2::¿Cuál es el patrón? 3, 6, 9, 12, … {
+=Se suma 3 cada vez
+~Se resta 3 cada vez
+~Los números son al azar
+~Siempre se suma 1
+}
+
+::Pregunta 3::En una receta, ¿qué pasa si cambias el orden de los pasos? {
+=Puede que no salga bien
+~Nunca cambia nada
+~La receta se borra
+~Sale mejor siempre
+}
+
+::Pregunta 4::En Scratch, ¿qué bloque inicia el programa al hacer clic en la bandera verde? {
+=«al hacer clic en la bandera verde»
+~«mover 10 pasos»
+~«decir Hola»
+~«esperar 1 segundo»
+}
