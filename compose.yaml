@@ -6,7 +6,7 @@
 #
 #  Perfiles opcionales (se activan con COMPOSE_PROFILES en el .env):
 #    moodle  → servicios moodle y moodle-cron (aporta Julian Godoy, carpeta moodle/)
-#    tunnel  → cloudflared (aporta Samuel Guzmán; requiere CLOUDFLARE_TUNNEL_TOKEN)
+#    tunnel  → ngrok (aporta Samuel Guzmán; requiere NGROK_AUTHTOKEN y NGROK_DOMAIN)
 # ============================================================================
 
 name: sanluquitas
@@ -171,23 +171,23 @@ services:
         condition: service_started
 
   # --------------------------------------------------------------------------
-  # Túnel de Cloudflare para el webhook de WhatsApp (Samuel Guzmán)
-  # Solo llega a http://nginx:8081/webhook/whatsapp (ver nginx/conf.d/webhook.conf)
+  # Túnel ngrok para el webhook de WhatsApp (Samuel Guzmán)
+  # Solo llega a http://nginx:8081 (ver nginx/conf.d/webhook.conf), nunca al 443.
   # --------------------------------------------------------------------------
-  cloudflared:
+  ngrok:
     profiles: [tunnel]
-    image: cloudflare/cloudflared:2026.11.0
+    image: ngrok/ngrok:3          # versión mayor fija; si no acepta --url, ver docs/INSTRUCCIONES_BOT_VM.md
     restart: unless-stopped
-    command: ["tunnel", "--no-autoupdate", "run"]
+    command: ["http", "nginx:8081", "--url=${NGROK_DOMAIN}"]
     environment:
-      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
     networks: [frontend, egress]
     depends_on:
       nginx:
         condition: service_started
 
 networks:
-  frontend:            # Nginx ↔ PHP-FPM y cloudflared
+  frontend:            # Nginx ↔ PHP-FPM y ngrok
   backend:
     internal: true     # apps ↔ PostgreSQL y Redis, sin salida a internet
   egress:              # salida a internet solo para quien la necesita

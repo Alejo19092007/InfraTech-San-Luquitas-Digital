@@ -32,7 +32,7 @@ docker compose up -d --build
 | `postgres`, `redis` | **Healthy** (healthcheck) antes de arrancar las aplicaciones |
 | `laravel-app`, `queue-worker`, `scheduler`, `nginx` | Iniciados |
 
-Los servicios de Moodle (perfil `moodle`) y `cloudflared` (perfil `tunnel`) no se levantan hasta que Julian y Samuel integren su parte.
+Los servicios de Moodle (perfil `moodle`) y `ngrok` (perfil `tunnel`) no se levantan hasta que Julian y Samuel integren su parte.
 
 ### Error encontrado y solución — `03-error-dependencias-php-8-4.png`
 **Síntoma:** `laravel-app`, `queue-worker` y `scheduler` quedaban en `Restarting (255)`. El log mostraba:
