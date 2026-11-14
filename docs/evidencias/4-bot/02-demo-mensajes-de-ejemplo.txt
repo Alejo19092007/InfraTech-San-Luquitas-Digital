@@ -1,0 +1,64 @@
+EVIDENCIA 02 - Demostración: mensajes de ejemplo y cómo los entiende el bot
+Fecha de ejecución ("hoy" para el bot): 2026-11-12 18:17 -05, Thursday
+Entorno: equipo de desarrollo (WSL), PHP 8.5.4
+Qué muestra: solo la interpretación del texto. Aún no se guarda nada en la base de datos.
+------------------------------------------------------------
+Mensaje : TAREA Matemáticas | 15/11 | Página 32 ejercicios 1-5
+Comando : tarea (válido)
+  materia: Matemáticas
+  fecha_entrega: 2026-11-15
+  descripcion: Página 32 ejercicios 1-5
+
+Mensaje : tarea @Ana Ciencias | mañana | Traer una planta
+Comando : tarea (válido)
+  hijo: Ana
+  materia: Ciencias
+  fecha_entrega: 2026-11-13
+  descripcion: Traer una planta
+
+Mensaje : TAREA GRADO 5 Inglés | viernes | Verbos: go | went | gone
+Comando : tarea (válido)
+  grado: 5
+  materia: Inglés
+  fecha_entrega: 2026-11-13
+  descripcion: Verbos: go | went | gone
+
+Mensaje : TAREA Matemáticas | 15/11
+Comando : tarea (no válido)
+  respuesta al usuario: Para registrar una tarea escribe:
+    TAREA materia | fecha | descripción
+    Ej.: TAREA Matemáticas | 15/11 | Página 32 ejercicios 1-5
+
+Mensaje : TAREA Sociales | 31/02 | Mapa de Colombia
+Comando : tarea (no válido)
+  respuesta al usuario: Esa fecha no existe. Escríbela como día/mes, por ejemplo 15/11.
+
+Mensaje : TAREA Sociales | 01/11 | Mapa de Colombia
+Comando : tarea (no válido)
+  respuesta al usuario: Esa fecha ya pasó. Revisa el día y el mes de entrega.
+
+Mensaje : MIS TAREAS
+Comando : mis_tareas (válido)
+
+Mensaje : HECHA 12
+Comando : hecha (válido)
+  tarea_id: 12
+
+Mensaje : HECHA
+Comando : hecha (no válido)
+  respuesta al usuario: Escribe HECHA y el número de la tarea. Ej.: HECHA 12. Con MIS TAREAS ves los números.
+
+Mensaje : VINCULAR 483 920
+Comando : vincular (válido)
+  codigo: 483920
+
+Mensaje : VINCULAR 123
+Comando : vincular (no válido)
+  respuesta al usuario: El código tiene 6 números. Ej.: VINCULAR 483920. Lo encuentras en el portal, en "Vincular WhatsApp".
+
+Mensaje : hola
+Comando : ayuda (válido)
+
+Mensaje : buenas tardes profe
+Comando : desconocido (no válido)
+
