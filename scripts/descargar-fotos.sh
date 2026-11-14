@@ -33,6 +33,15 @@ FOTOS = {
     "sala-computo": ("sala-computo.jpg", ["Colombia niños computadores escuela", "Colombia students computers classroom"], "Estudiantes usando computadores en una escuela de Colombia"),
 }
 
+# Respaldo si Commons no devuelve nada: fotos del Banco Mundial en Flickr (CC BY-NC-ND 2.0,
+# uso no comercial y sin modificar; ya se habían descargado bien desde estas direcciones).
+RESPALDO = {
+    "a-clase": {"titulo": "Flickr 4725004476", "url": "https://live.staticflickr.com/1036/4725004476_795a5760f8_b.jpg",
+                "licencia": "CC BY-NC-ND 2.0", "autor": "Charlotte Kesl / Banco Mundial", "fuente": "https://www.flickr.com/photos/worldbank/4725004476"},
+    "sala-computo": {"titulo": "Flickr 4725033296", "url": "https://live.staticflickr.com/1087/4725033296_f3b023b984_b.jpg",
+                     "licencia": "CC BY-NC-ND 2.0", "autor": "Charlotte Kesl / Banco Mundial", "fuente": "https://www.flickr.com/photos/worldbank/4725033296"},
+}
+
 def api(**p):
     url = API + "?" + urllib.parse.urlencode({**p, "format": "json"})
     with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=30) as r:
@@ -67,12 +76,16 @@ usados = {c["titulo"] for c in creditos.values()}
 for clave, (archivo, consultas, alt) in FOTOS.items():
     if os.path.exists(os.path.join(DEST, archivo)) and clave in creditos:
         print(f"  ya existe: {archivo}"); continue
+    r = None
     for q in consultas:
         try:
             r = buscar(q, usados)
         except Exception as e:
             print(f"  error buscando '{q}': {e}"); continue
         if r: break
+    if not r and clave in RESPALDO:
+        r = {**RESPALDO[clave], "descripcion": ""}
+        print(f"  {clave}: sin resultado en Commons, se usa la foto de respaldo")
     if not r:
         print(f"  SIN RESULTADO para {clave}: el portal mostrará un fondo liso"); continue
     req = urllib.request.Request(r["url"], headers=UA)
