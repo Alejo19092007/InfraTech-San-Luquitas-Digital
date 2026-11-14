@@ -6,7 +6,7 @@
     <p class="miga">Estás en: <a href="{{ route('inicio') }}">Inicio</a> / Noticias</p>
     <header class="cabeza-pagina">
         <h1>Noticias</h1>
-        <p>Avisos, eventos y novedades de las tres sedes.</p>
+        <p>Avisos, eventos y novedades de la escuela.</p>
     </header>
 
     <div class="herramientas">

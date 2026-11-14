@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <meta name="theme-color" content="#0b3d7a">
     <meta name="description" content="@yield('descripcion', 'Portal de la '.config('portal.institucion').': noticias, recursos educativos y acceso al aula virtual.')">
     <title>@hasSection('titulo')@yield('titulo') | @endif{{ config('portal.institucion') }}</title>
@@ -16,8 +17,8 @@
     </script>
     {{-- Todo se sirve desde el propio servidor (fuentes incluidas): funciona en la LAN sin internet --}}
     <link rel="preload" href="{{ asset('fonts/montserrat.woff2') }}" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="{{ asset('css/portal.css') }}?v=3">
-    <script src="{{ asset('js/portal.js') }}?v=3" defer></script>
+    <link rel="stylesheet" href="{{ asset('css/portal.css') }}?v={{ @filemtime(public_path('css/portal.css')) }}">
+    <script src="{{ asset('js/portal.js') }}?v={{ @filemtime(public_path('js/portal.js')) }}" defer></script>
 </head>
 <body>
 <a class="saltar" href="#contenido">Saltar al contenido</a>

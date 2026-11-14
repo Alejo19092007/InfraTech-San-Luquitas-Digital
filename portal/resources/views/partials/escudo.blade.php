@@ -1,8 +1,9 @@
 {{-- Escudo de la institución. Uso: @include('partials.escudo', ['tam' => 56]) --}}
-<svg width="{{ $tam ?? 56 }}" height="{{ $tam ?? 56 }}" viewBox="0 0 64 64" role="img" aria-label="Escudo de la Institución Educativa San Luquitas">
-    <path d="M32 3 57 10v22c0 14-10.5 23.5-25 29C17.5 55.5 7 46 7 32V10z" fill="#0b3d7a" stroke="#f5b700" stroke-width="3" stroke-linejoin="round"/>
-    <circle cx="32" cy="20" r="6.5" fill="#f5b700"/>
-    <path d="M11 38 22 26l8 8 7-9 16 16c-3.5 8-10.5 13.5-21 17.5C21.5 54.5 14 48 11 38z" fill="#1e7a46"/>
-    <path d="M19 40c5-2.5 9-2.5 13 0 4-2.5 8-2.5 13 0v9c-5-2.5-9-2.5-13 0-4-2.5-8-2.5-13 0z" fill="#fff"/>
-    <path d="M32 40v9" stroke="#0b3d7a" stroke-width="1.5"/>
+<svg width="{{ $tam ?? 56 }}" height="{{ $tam ?? 56 }}" viewBox="0 0 64 72" role="img" aria-label="Escudo de la Institución Educativa San Luquitas">
+    <path d="M32 2 60 9v26c0 17-11.5 28-28 35C15.5 63 4 52 4 35V9z" fill="#0b3d7a"/>
+    <path d="M32 6 56 12v23c0 14.5-9.5 24-24 30.5C17.5 59 8 49.5 8 35V12z" fill="none" stroke="#f5b700" stroke-width="2"/>
+    <circle cx="32" cy="24" r="8" fill="#f5b700"/>
+    <path d="M8 44c6-7 11-10 16-10s7 4 10 4 8-8 22-5v8c0 6-3 11-8 16-6 5-12 8-16 9.5C20 63 8 54 8 44z" fill="#1e7a46"/>
+    <path d="M17 46c5-2.5 10-2.5 15 0 5-2.5 10-2.5 15 0v11c-5-2.5-10-2.5-15 0-5-2.5-10-2.5-15 0z" fill="#fff"/>
+    <path d="M32 46v11" stroke="#0b3d7a" stroke-width="1.500"/>
 </svg>

@@ -325,3 +325,46 @@ p { margin: 0 0 1em; }
 @media print {
   .utilidad, .barra, .accesos, .pie-pagina, .pie-legal, .acciones, .herramientas, .filtros { display: none; }
 }
+
+/* --- Ajuste de diseño: sin iconos decorativos --------------------------------
+   Los accesos son texto con una franja de color; las listas usan guion; el
+   bloque de WhatsApp muestra un mensaje real en lugar de un ícono. */
+.accesos { margin-top: -2.5rem; }
+.accesos a { display: block; padding: 1rem 1.15rem 1.1rem; border-bottom-width: 1px; border-top: 4px solid var(--c, #0b3d7a); box-shadow: none; }
+.accesos a:hover strong { text-decoration: underline; text-underline-offset: .18em; }
+.accesos a:hover { border-color: var(--linea); }
+.accesos strong { color: var(--c, #0b3d7a); font-size: 1.0625rem; }
+.accesos small { font-size: .875rem; }
+.lista-puntos li { display: block; padding-left: 1.1rem; position: relative; }
+.lista-puntos li::before { content: ""; position: absolute; left: 0; top: .78em; width: .55rem; height: 2px; background: var(--azul); }
+.whatsapp { grid-template-columns: 1.4fr 1fr; gap: 2rem; border-left-width: 1px; border-top: 4px solid #1e7a46; background: var(--fondo-2); }
+.chat { display: grid; gap: .5rem; font-size: .9375rem; }
+.chat p { margin: 0; padding: .55rem .8rem; border-radius: 10px; max-width: 24rem; box-shadow: 0 1px 1px rgb(0 0 0 / .12); }
+.chat-yo { justify-self: end; background: #d9fdd3; color: #1b2430; border-top-right-radius: 2px; }
+.chat-bot { justify-self: start; background: var(--fondo); border-top-left-radius: 2px; }
+.noticia-imagen .sin-foto { background: var(--azul-claro); }
+.sede h3 { display: block; }
+.sede { border-top: 4px solid var(--azul); box-shadow: none; }
+@media (max-width: 48rem) { .accesos { margin-top: 0; padding-top: 1rem; } .whatsapp { grid-template-columns: 1fr; } }
+
+/* Portada: la foto manda; el degradado solo asegura la lectura del texto */
+.banner::after { background: linear-gradient(90deg, rgb(8 24 48 / .78) 0%, rgb(8 24 48 / .45) 42%, rgb(8 24 48 / 0) 75%), linear-gradient(0deg, rgb(8 24 48 / .35), rgb(8 24 48 / 0) 40%); }
+.banner .banner-credito { top: auto; bottom: .6rem; text-shadow: 0 1px 2px rgb(0 0 0 / .7); }
+.banner-credito a { color: #fff; }
+
+/* Accesos rápidos: colores más claros en modo oscuro para que el título se lea */
+:root.oscuro .accesos a { --c: #8ab4f0; }
+:root.oscuro .accesos a.acc-verde { --c: #6fcf97; }
+:root.oscuro .accesos a.acc-amarillo { --c: #f5b700; }
+:root.oscuro .accesos a.acc-morado { --c: #c3a8f5; }
+@media (prefers-color-scheme: dark) {
+  :root:not(.claro) .accesos a { --c: #8ab4f0; }
+  :root:not(.claro) .accesos a.acc-verde { --c: #6fcf97; }
+  :root:not(.claro) .accesos a.acc-amarillo { --c: #f5b700; }
+  :root:not(.claro) .accesos a.acc-morado { --c: #c3a8f5; }
+}
+
+/* Todas las fotos de las tarjetas con la misma proporción (el enlace es inline y ignoraba aspect-ratio) */
+.noticia-imagen { display: block; overflow: hidden; }
+
+.recurso .pie { align-items: center; }
