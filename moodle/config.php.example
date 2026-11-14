@@ -22,5 +22,6 @@ $CFG->wwwroot   = 'https://moodle.sanluquitas.local';
 $CFG->dataroot  = '/var/www/moodledata';      // fuera de la raíz web
 $CFG->admin     = 'admin';
 $CFG->directorypermissions = 02777;
+$CFG->noemailever = true;            // sin servidor de correo en el laboratorio
 
 require_once(__DIR__ . '/lib/setup.php'); // No editar
