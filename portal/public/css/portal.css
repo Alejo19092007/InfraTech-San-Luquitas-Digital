@@ -325,3 +325,24 @@ p { margin: 0 0 1em; }
 @media print {
   .utilidad, .barra, .accesos, .pie-pagina, .pie-legal, .acciones, .herramientas, .filtros { display: none; }
 }
+
+/* --- Ajuste de diseño: sin iconos decorativos --------------------------------
+   Los accesos son texto con una franja de color; las listas usan guion; el
+   bloque de WhatsApp muestra un mensaje real en lugar de un ícono. */
+.accesos { margin-top: -2.5rem; }
+.accesos a { display: block; padding: 1rem 1.15rem 1.1rem; border-bottom-width: 1px; border-top: 4px solid var(--c, #0b3d7a); box-shadow: none; }
+.accesos a:hover strong { text-decoration: underline; text-underline-offset: .18em; }
+.accesos a:hover { border-color: var(--linea); }
+.accesos strong { color: var(--c, #0b3d7a); font-size: 1.0625rem; }
+.accesos small { font-size: .875rem; }
+.lista-puntos li { display: block; padding-left: 1.1rem; position: relative; }
+.lista-puntos li::before { content: ""; position: absolute; left: 0; top: .78em; width: .55rem; height: 2px; background: var(--azul); }
+.whatsapp { grid-template-columns: 1.4fr 1fr; gap: 2rem; border-left-width: 1px; border-top: 4px solid #1e7a46; background: var(--fondo-2); }
+.chat { display: grid; gap: .5rem; font-size: .9375rem; }
+.chat p { margin: 0; padding: .55rem .8rem; border-radius: 10px; max-width: 24rem; box-shadow: 0 1px 1px rgb(0 0 0 / .12); }
+.chat-yo { justify-self: end; background: #d9fdd3; color: #1b2430; border-top-right-radius: 2px; }
+.chat-bot { justify-self: start; background: var(--fondo); border-top-left-radius: 2px; }
+.noticia-imagen .sin-foto { background: var(--azul-claro); }
+.sede h3 { display: block; }
+.sede { border-top: 4px solid var(--azul); box-shadow: none; }
+@media (max-width: 48rem) { .accesos { margin-top: 0; padding-top: 1rem; } .whatsapp { grid-template-columns: 1fr; } }

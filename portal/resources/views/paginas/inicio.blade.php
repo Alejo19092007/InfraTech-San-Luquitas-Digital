@@ -25,16 +25,12 @@
 <nav class="accesos envoltura" aria-label="Accesos rápidos">
     <ul>
         <li><a href="{{ config('portal.moodle_url') }}">
-            <span class="icono"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg></span>
             <span><strong>Aula virtual</strong><small>Cursos en Moodle</small></span></a></li>
         <li><a class="acc-verde" href="{{ route('novedades.index') }}">
-            <span class="icono"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h13v14H6a2 2 0 0 1-2-2z"/><path d="M17 9h3v8a2 2 0 0 1-2 2M8 9h5M8 13h5"/></svg></span>
             <span><strong>Noticias</strong><small>Avisos y circulares</small></span></a></li>
         <li><a class="acc-amarillo" href="{{ route('recursos.index') }}">
-            <span class="icono"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 8h7"/></svg></span>
             <span><strong>Recursos educativos</strong><small>{{ $totalRecursos }} actividades</small></span></a></li>
         <li><a class="acc-morado" href="#whatsapp">
-            <span class="icono"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20l1.4-4.2A8 8 0 1 1 8.2 18.6z"/><path d="M9 10h6M9 13h4"/></svg></span>
             <span><strong>Tareas por WhatsApp</strong><small>Cómo registrarlas</small></span></a></li>
     </ul>
 </nav>
@@ -67,9 +63,9 @@
                 <li><strong>3</strong><span>sedes rurales</span></li>
             </ul>
             <ul class="lista-puntos">
-                <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg><span>Curso “Mis primeros pasos en programación” para 4.º y 5.º.</span></li>
-                <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg><span>Cada estudiante tiene su usuario y avanza a su ritmo.</span></li>
-                <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg><span>Copia de seguridad automática todas las noches.</span></li>
+                <li>Curso “Mis primeros pasos en programación” para 4.º y 5.º.</li>
+                <li>Cada estudiante tiene su usuario y avanza a su ritmo.</li>
+                <li>Copia de seguridad automática todas las noches.</li>
             </ul>
             <a class="boton" href="{{ config('portal.moodle_url') }}">Ingresar al aula virtual</a>
         </div>
@@ -79,10 +75,13 @@
 <section class="seccion" id="whatsapp">
     <div class="envoltura">
         <div class="whatsapp">
-            <span class="icono"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20l1.4-4.2A8 8 0 1 1 8.2 18.6z"/><path d="M9 10h6M9 13h4"/></svg></span>
             <div>
                 <h2>Registra las tareas por WhatsApp, incluso sin señal</h2>
                 <p>Estudiantes, acudientes y docentes escriben al <span class="numero">{{ config('portal.whatsapp') }}</span>. Si el celular no tiene conexión, WhatsApp guarda el mensaje y lo envía cuando vuelva. La tarea queda en el portal y el sistema responde con la confirmación.</p>
+            </div>
+            <div class="chat" aria-label="Ejemplo de conversación">
+                <p class="chat-yo">tarea 5B matemáticas guía de fracciones para el viernes</p>
+                <p class="chat-bot">Tarea registrada para 5.º B, Matemáticas: “guía de fracciones”, entrega viernes 21 de noviembre.</p>
             </div>
         </div>
     </div>

@@ -50,7 +50,7 @@
                 ['Alto del Roble', 'Escuela multigrado de 1.º a 5.º. Internet satelital intermitente.'],
             ] as [$sede, $detalle])
                 <li class="sede">
-                    <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>{{ $sede }}</h3>
+                    <h3>{{ $sede }}</h3>
                     <p>{{ $detalle }}</p>
                 </li>
             @endforeach

@@ -33,7 +33,7 @@
                 <div class="pie">
                     <a class="enlace" href="{{ $recurso->url }}" target="_blank" rel="noopener noreferrer">Abrir {{ $recurso->titulo }}<span class="oculto"> (se abre en otra pestaña)</span></a>
                     @if ($recurso->funciona_sin_internet)
-                        <span class="sin-internet"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>Sin internet</span>
+                        <span class="sin-internet">Sin internet</span>
                     @endif
                 </div>
             </li>
