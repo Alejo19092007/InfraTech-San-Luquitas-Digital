@@ -199,8 +199,8 @@ services:
     image: ngrok/ngrok:3          # versión mayor fija; si no acepta --url, ver docs/INSTRUCCIONES_BOT_VM.md
     restart: unless-stopped
     # Con NGROK_DOMAIN usa el dominio fijo; sin él, ngrok da una URL aleatoria
-    # (se ve con: docker compose logs ngrok) y hay que re-registrarla en Meta al reiniciar.
-    entrypoint: ["/bin/sh", "-c", "exec ngrok http nginx:8081 ${NGROK_DOMAIN:+--url=${NGROK_DOMAIN}}"]
+    # (se ve con: docker compose logs ngrok | grep url=) y hay que re-registrarla en Meta al reiniciar.
+    entrypoint: ["/bin/sh", "-c", "exec ngrok http nginx:8081 --log=stdout ${NGROK_DOMAIN:+--url=${NGROK_DOMAIN}}"]
     environment:
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
     networks: [frontend, egress]
