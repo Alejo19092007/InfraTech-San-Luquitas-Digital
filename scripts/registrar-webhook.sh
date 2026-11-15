@@ -4,6 +4,8 @@
 # Hay que repetirlo cada vez que ngrok se reinicie, porque la URL aleatoria cambia.
 # Lee los valores de .env (nada de secretos en el repo). Requiere:
 #   WHATSAPP_APP_ID, WHATSAPP_APP_SECRET, WHATSAPP_VERIFY_TOKEN, WHATSAPP_API_VERSION (opcional)
+# Además, si hay WHATSAPP_TOKEN y WHATSAPP_PHONE_NUMBER_ID, reemplaza la URL propia del número
+# (Meta le da prioridad sobre la de la app). Esto SUSTITUYE la URL que tuviera ese número.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -32,4 +34,16 @@ curl -s -X POST "https://graph.facebook.com/$VERSION/$APP_ID/subscriptions" \
   --data-urlencode "fields=messages" \
   --data-urlencode "access_token=$APP_ID|$APP_SECRET"
 echo
+
+TOKEN=$(leer WHATSAPP_TOKEN); PHONE=$(leer WHATSAPP_PHONE_NUMBER_ID)
+if [ -n "$TOKEN" ] && [ -n "$PHONE" ]; then
+  echo "Reemplazando la URL propia del número $PHONE..."
+  curl -s -X POST "https://graph.facebook.com/$VERSION/$PHONE" \
+    -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+    -d "{\"webhook_configuration\":{\"override_callback_uri\":\"$URL/webhook/whatsapp\",\"verify_token\":\"$VERIFY\"}}"
+  echo
+  echo "URL que Meta usa ahora para el número:"
+  curl -s "https://graph.facebook.com/$VERSION/$PHONE?fields=webhook_configuration" -H "Authorization: Bearer $TOKEN"
+  echo
+fi
 echo "Si arriba dice {\"success\":true}, el webhook quedó registrado."
