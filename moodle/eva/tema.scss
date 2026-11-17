@@ -1,139 +1,314 @@
 // ============================================================================
 //  Apariencia del EVA "San Luquitas Digital" (SCSS adicional del tema Boost).
-//  Se pega en Administración del sitio > Apariencia > Boost > SCSS en bruto,
-//  o se aplica con scripts/aplicar-tema-moodle.sh.
-//  Colores del escudo: azul institucional y dorado.
-//  Para quitarlo todo: scripts/aplicar-tema-moodle.sh --quitar
+//  Se aplica con scripts/aplicar-tema-moodle.sh (y lo hace crear-eva.php).
+//  Para volver al tema original: bash scripts/aplicar-tema-moodle.sh --quitar
+//
+//  Criterios: lectura grande y clara para primaria (4.º y 5.º), un solo color
+//  de acción (azul), dorado solo para marcar "dónde estoy", bordes y esquinas
+//  redondeadas, mucho espacio, contraste alto y foco visible con teclado.
 // ============================================================================
-$sl-azul: #0b3d7a;
-$sl-azul-claro: #14589f;
-$sl-oro: #f2b632;
-$sl-fondo: #f3f7fb;
+$azul: #0b3d7a;
+$azul2: #14589f;
+$cielo: #eaf2fb;
+$oro: #f2b632;
+$tinta: #142a43;
+$texto: #2c3e50;
+$fondo: #f5f8fc;
+$borde: #d5e1ef;
+$verde: #1f9d6b;
+$escudo: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0ODAgNTQwIiB3aWR0aD0iNDgwIiBoZWlnaHQ9IjU0MCI+CjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMCIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzE0NTg5ZiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzBiM2Q3YSIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPgo8cGF0aCBkPSJNMjQwIDE0IEw0MzYgNzggVjI2MiBDNDM2IDM4NCAzNDYgNDc2IDI0MCA1MjYgQzEzNCA0NzYgNDQgMzg0IDQ0IDI2MiBWNzggWiIgZmlsbD0iI2YyYjYzMiIvPgo8cGF0aCBkPSJNMjQwIDQ0IEw0MDggOTkgVjI2MiBDNDA4IDM2NiAzMzIgNDQ2IDI0MCA0OTAgQzE0OCA0NDYgNzIgMzY2IDcyIDI2MiBWOTkgWiIgZmlsbD0idXJsKCNnKSIvPgo8cGF0aCBkPSJNMjQwIDYwIEwzOTQgMTEwIFYyNjIgQzM5NCAzNTYgMzI2IDQzMCAyNDAgNDcxIEMxNTQgNDMwIDg2IDM1NiA4NiAyNjIgVjExMCBaIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS1vcGFjaXR5PSIuMzUiIHN0cm9rZS13aWR0aD0iMyIvPgo8cG9seWdvbiBwb2ludHM9IjI0MC4wLDEyMi4wIDI1MS4yLDE1Mi42IDI4My43LDE1My44IDI1OC4xLDE3My45IDI2Ny4wLDIwNS4yIDI0MC4wLDE4Ny4wIDIxMy4wLDIwNS4yIDIyMS45LDE3My45IDE5Ni4zLDE1My44IDIyOC44LDE1Mi42IiBmaWxsPSIjZjJiNjMyIi8+CjxwYXRoIGQ9Ik0yNDAgMzUyIEMyMTIgMzI2IDE2MCAzMjAgMTE4IDMzNCBWMjM2IEMxNjAgMjIyIDIxMiAyMjggMjQwIDI1NCBaIiBmaWxsPSIjZmZmZmZmIi8+CjxwYXRoIGQ9Ik0yNDAgMzUyIEMyNjggMzI2IDMyMCAzMjAgMzYyIDMzNCBWMjM2IEMzMjAgMjIyIDI2OCAyMjggMjQwIDI1NCBaIiBmaWxsPSIjZTZlZmZhIi8+CjxwYXRoIGQ9Ik0yNDAgMjU0IFYzNTIiIHN0cm9rZT0iIzBiM2Q3YSIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPHBhdGggZD0iTTE0MCAyNjIgQzE3MCAyNTYgMjA0IDI2MCAyMjQgMjcyIE0xNDAgMjg4IEMxNzAgMjgyIDIwNCAyODYgMjI0IDI5OCBNMjU2IDI3MiBDMjc2IDI2MCAzMTAgMjU2IDM0MCAyNjIgTTI1NiAyOTggQzI3NiAyODYgMzEwIDI4MiAzNDAgMjg4IiBzdHJva2U9IiMxNDU4OWYiIHN0cm9rZS1vcGFjaXR5PSIuNDUiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIi8+CjxwYXRoIGQ9Ik0xMTggMzM0IEMxNjAgMzIwIDIxMiAzMjYgMjQwIDM1MiBDMjY4IDMyNiAzMjAgMzIwIDM2MiAzMzQgTDM2MiAzNTIgQzMyMCAzMzggMjY4IDM0NCAyNDAgMzcyIEMyMTIgMzQ0IDE2MCAzMzggMTE4IDM1MiBaIiBmaWxsPSIjZjJiNjMyIi8+Cjwvc3ZnPg==");
 
+// ---------- base ----------
 body {
-  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  background-color: $sl-fondo;
+  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: $texto;
+  background-color: $fondo;
 }
 #page { background-color: transparent; }
+h1, h2, h3, h4, h5 {
+  color: $tinta;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+a { color: $azul2; text-underline-offset: 3px; }
+a:hover { color: $azul; }
+:focus-visible {
+  outline: 3px solid $oro;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
 
 // ---------- barra superior ----------
 .navbar {
-  background: linear-gradient(90deg, $sl-azul 0%, $sl-azul-claro 100%) !important;
-  border-bottom: 3px solid $sl-oro;
-  box-shadow: 0 4px 14px rgba(11, 61, 122, 0.25);
+  background-color: #ffffff !important;
+  border-bottom: 4px solid $oro;
+  box-shadow: 0 2px 14px rgba(11, 61, 122, 0.10);
+  min-height: 4.25rem;
 }
-.navbar .navbar-brand,
-.navbar .nav-link,
-.navbar .primary-navigation .nav-link,
-.navbar .icon,
-.navbar .usermenu .login a {
-  color: #ffffff;
+.navbar-brand {
+  font-size: 0;
+  gap: 0.75rem;
+  text-decoration: none;
+}
+.navbar-brand img,
+.navbar-brand .logo { display: none; }
+.navbar-brand::before {
+  content: "";
+  display: block;
+  width: 2.4rem;
+  height: 2.7rem;
+  background: $escudo center / contain no-repeat;
+}
+.navbar-brand::after {
+  content: "San Luquitas Digital";
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: $azul;
+}
+.navbar .primary-navigation .nav-link {
+  font-weight: 600;
+  color: $tinta;
 }
 .navbar .primary-navigation .nav-link.active,
 .navbar .primary-navigation .nav-link:hover {
-  color: $sl-oro;
-  border-bottom-color: $sl-oro;
+  color: $azul;
+  border-bottom-color: $oro;
 }
-.navbar .navbar-brand img,
-.navbar .logo { max-height: 44px; }
-
-// ---------- encabezados ----------
-#region-main h1,
-#region-main h2,
-#region-main h3 {
-  color: $sl-azul;
-  letter-spacing: -0.01em;
+.navbar .usermenu .login a,
+.navbar .login a {
+  display: inline-block;
+  background: $azul;
+  color: #ffffff;
+  font-weight: 700;
+  padding: 0.5rem 1.5rem;
+  border-radius: 999px;
+  text-decoration: none;
+}
+.navbar .usermenu .login a:hover,
+.navbar .login a:hover { background: $azul2; color: #ffffff; }
+.dropdown-menu {
+  border: 1px solid $borde;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(11, 61, 122, 0.16);
 }
 
-// ---------- tarjetas ----------
+// ---------- tarjetas y bloques ----------
 .card {
-  border: 1px solid rgba(11, 61, 122, 0.10);
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(11, 61, 122, 0.08);
+  background: #ffffff;
+  border: 1px solid $borde;
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(11, 61, 122, 0.06);
 }
-#page-header .card {
-  background: linear-gradient(135deg, #ffffff 0%, #e8f0fa 100%);
-  border-left: 6px solid $sl-oro;
+#region-main {
+  border-color: $borde;
+  border-radius: 20px;
 }
-.course-card,
-.dashboard-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.dashboard-card,
+.course-card {
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
-.course-card:hover,
-.dashboard-card:hover {
+.dashboard-card:hover,
+.course-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(11, 61, 122, 0.18);
+  box-shadow: 0 14px 30px rgba(11, 61, 122, 0.16);
 }
+.dashboard-card .coursename,
+.course-card .coursename { font-weight: 700; }
+#page-header .page-header-headings h1 { font-size: 2.1rem; }
+.breadcrumb { font-size: 0.95rem; }
 
 // ---------- portada del sitio ----------
-#page-site-index #page-header .card {
-  background: linear-gradient(135deg, $sl-azul 0%, $sl-azul-claro 100%);
-  border-left: 0;
-  border-bottom: 6px solid $sl-oro;
+#page-site-index #region-main::before {
+  content: "Aula virtual de 4.º y 5.º de primaria\A Entra con tu usuario y empieza a aprender";
+  white-space: pre-line;
+  display: block;
+  margin-bottom: 1.75rem;
+  padding: 2.25rem 8rem 2.25rem 2rem;
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #ffffff;
+  border-radius: 16px;
+  border-bottom: 6px solid $oro;
+  background:
+    $escudo right 2rem center / 4.5rem no-repeat,
+    linear-gradient(120deg, $azul 0%, $azul2 100%);
+}
+.coursebox {
+  background: #ffffff;
+  border: 1px solid $borde;
+  border-left: 6px solid $oro;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.coursebox:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(11, 61, 122, 0.14);
+}
+.coursebox .coursename a,
+.coursebox .coursename {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: $azul;
+  text-decoration: none;
+}
+.coursebox .coursename a::after {
+  content: "Entrar al curso";
+  display: inline-block;
+  margin-left: 1rem;
+  padding: 0.2rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: $tinta;
+  background: $oro;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
+// ---------- botones y formularios ----------
+.btn {
+  border-radius: 999px;
+  font-weight: 700;
+  padding: 0.55rem 1.5rem;
+}
+.btn-primary {
+  background-color: $azul;
+  border-color: $azul;
   color: #ffffff;
 }
-#page-site-index #page-header .card h1,
-#page-site-index #page-header .card h2,
-#page-site-index #page-header .card a,
-#page-site-index #page-header .card .no-overflow,
-#page-site-index #page-header .card p {
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: $azul2;
+  border-color: $azul2;
   color: #ffffff;
 }
+.btn-secondary {
+  background-color: $cielo;
+  border-color: $cielo;
+  color: $azul;
+}
+.btn-secondary:hover {
+  background-color: #d8e7f7;
+  border-color: #d8e7f7;
+  color: $azul;
+}
+.form-control,
+.form-select {
+  border: 2px solid $borde;
+  border-radius: 12px;
+  padding: 0.65rem 1rem;
+  font-size: 1.05rem;
+}
+.form-control:focus,
+.form-select:focus {
+  border-color: $azul2;
+  box-shadow: 0 0 0 4px rgba(20, 88, 159, 0.16);
+}
+.alert { border-radius: 14px; }
+
+// ---------- inicio de sesión ----------
+.pagelayout-login #page {
+  background: linear-gradient(160deg, $azul 0%, $azul2 60%, #1b6fc4 100%) !important;
+}
+.login-container {
+  width: 100%;
+  max-width: 28.5rem;
+  padding: 2.5rem 2.25rem;
+  border-radius: 24px;
+  box-shadow: inset 0 6px 0 $oro, 0 30px 70px rgba(0, 0, 0, 0.35);
+}
+.login-container .login-logo {
+  position: relative;
+  height: 9.5rem;
+  margin-bottom: 1.25rem;
+  background: $escudo top center / auto 6.5rem no-repeat;
+}
+.login-container .login-logo img { display: none; }
+.login-container .login-logo::after {
+  content: "San Luquitas Digital";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  text-align: center;
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: $azul;
+}
+.login-container .login-heading { text-align: center; color: $azul; }
+.login-container .btn-primary { width: 100%; padding: 0.7rem 1.5rem; font-size: 1.1rem; }
+.login-container h2 { font-size: 1.15rem; }
 
 // ---------- curso ----------
 .course-content .course-section,
-.course-content li.section {
-  border-radius: 14px;
-  box-shadow: 0 3px 12px rgba(11, 61, 122, 0.07);
+.course-content li.section,
+li.course-section {
+  background: #ffffff;
+  border: 1px solid $borde;
+  border-left: 6px solid $azul2;
+  border-radius: 16px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 10px rgba(11, 61, 122, 0.05);
 }
 .course-content .sectionname,
-.course-content .sectionname a {
-  color: $sl-azul;
+.course-content .sectionname a,
+.course-section .sectionname a {
+  font-size: 1.35rem;
   font-weight: 700;
+  color: $azul;
 }
 .activity-item {
   border-radius: 12px;
   transition: background-color 0.15s ease;
 }
-.activity-item:hover { background-color: #eef4fb; }
-
-// ---------- botones ----------
-.btn {
+.activity-item:hover { background-color: $cielo; }
+.activity-item .activityname a,
+.activity-item .instancename { font-weight: 600; color: $tinta; }
+.activityiconcontainer { border-radius: 12px; }
+.progress {
+  height: 0.7rem;
+  background-color: $cielo;
   border-radius: 999px;
-  font-weight: 600;
 }
-.btn-primary {
-  padding: 0.5rem 1.5rem;
-  box-shadow: 0 4px 10px rgba(11, 61, 122, 0.25);
+.progress-bar {
+  background: linear-gradient(90deg, $azul2, $verde);
+  border-radius: 999px;
 }
-.btn-primary:hover { transform: translateY(-1px); }
+.courseindex .courseindex-item.pageitem {
+  background-color: $cielo;
+  border-left: 4px solid $oro;
+}
 
 // ---------- cuestionarios ----------
 .que {
-  border-radius: 14px;
-  box-shadow: 0 3px 10px rgba(11, 61, 122, 0.08);
+  border: 1px solid $borde;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(11, 61, 122, 0.06);
 }
+.que .info { background-color: $cielo; border: 0; }
+.que .qtext { font-size: 1.2rem; color: $tinta; }
+.que .answer > div {
+  margin-bottom: 0.6rem;
+  padding: 0.6rem 1rem;
+  border: 2px solid $borde;
+  border-radius: 12px;
+}
+.que .answer > div:hover { border-color: $azul2; background-color: $cielo; }
 
-// ---------- inicio de sesión ----------
-body.pagelayout-login,
-#page-login-index {
-  background: linear-gradient(135deg, $sl-azul 0%, $sl-azul-claro 60%, $sl-oro 160%) fixed !important;
+// ---------- pantallas pequeñas ----------
+@media (max-width: 36rem) {
+  #page-site-index #region-main::before {
+    padding: 1.5rem 1.25rem;
+    font-size: 1.25rem;
+    background: linear-gradient(120deg, $azul 0%, $azul2 100%);
+  }
+  .login-container { padding: 2rem 1.5rem; }
+  .coursebox .coursename a::after { display: block; margin: 0.5rem 0 0; width: max-content; }
 }
-#page-login-index .login-container,
-#page-login-index .card,
-.pagelayout-login .card {
-  border-radius: 22px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-  border: 0;
-}
-.login-logo img,
-.login-heading img { max-height: 96px; }
-
-// ---------- pie de página ----------
-#page-footer {
-  background: $sl-azul;
-  color: #dbe7f5;
-  border-top: 4px solid $sl-oro;
-  margin-top: 2rem;
-}
-#page-footer a { color: $sl-oro; }
