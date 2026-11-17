@@ -73,3 +73,14 @@ La instalación se hace sola. Está lista cuando existe `/var/www/moodledata/.ev
 ## Respaldo
 
 `scripts/backup.sh` ya incluye la base `moodle_db`, el volumen `moodledata` y el `config.php` cifrado. El código de Moodle no se respalda porque se reconstruye desde la imagen.
+
+## Apariencia
+
+El aspecto del sitio (barra azul con borde dorado, tarjetas redondeadas, portada y pantalla de acceso) está en `moodle/eva/tema.scss`.
+En un servidor que ya está funcionando se aplica sin reconstruir:
+
+```bash
+bash scripts/aplicar-tema-moodle.sh           # aplica el tema
+bash scripts/aplicar-tema-moodle.sh --quitar  # vuelve al tema original
+```
+Luego se recarga el navegador con Ctrl+F5. En una instalación nueva, `crear-eva.php` lo aplica solo.

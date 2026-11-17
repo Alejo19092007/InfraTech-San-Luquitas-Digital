@@ -66,6 +66,11 @@ paso('Logo con el escudo', function () {
     ], $ruta);
     set_config('logo', '/escudo.png', 'core_admin');
 });
+paso('Apariencia personalizada (SCSS)', function () {
+    $ruta = '/opt/eva/tema.scss';
+    if (!is_readable($ruta)) throw new Exception("no existe $ruta");
+    set_config('scss', file_get_contents($ruta), 'theme_boost');
+});
 paso('Zona horaria y país', function () {
     set_config('timezone', 'America/Bogota');
     set_config('country', 'CO');

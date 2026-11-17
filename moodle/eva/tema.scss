@@ -1,0 +1,139 @@
+// ============================================================================
+//  Apariencia del EVA "San Luquitas Digital" (SCSS adicional del tema Boost).
+//  Se pega en Administración del sitio > Apariencia > Boost > SCSS en bruto,
+//  o se aplica con scripts/aplicar-tema-moodle.sh.
+//  Colores del escudo: azul institucional y dorado.
+//  Para quitarlo todo: scripts/aplicar-tema-moodle.sh --quitar
+// ============================================================================
+$sl-azul: #0b3d7a;
+$sl-azul-claro: #14589f;
+$sl-oro: #f2b632;
+$sl-fondo: #f3f7fb;
+
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  background-color: $sl-fondo;
+}
+#page { background-color: transparent; }
+
+// ---------- barra superior ----------
+.navbar {
+  background: linear-gradient(90deg, $sl-azul 0%, $sl-azul-claro 100%) !important;
+  border-bottom: 3px solid $sl-oro;
+  box-shadow: 0 4px 14px rgba(11, 61, 122, 0.25);
+}
+.navbar .navbar-brand,
+.navbar .nav-link,
+.navbar .primary-navigation .nav-link,
+.navbar .icon,
+.navbar .usermenu .login a {
+  color: #ffffff;
+}
+.navbar .primary-navigation .nav-link.active,
+.navbar .primary-navigation .nav-link:hover {
+  color: $sl-oro;
+  border-bottom-color: $sl-oro;
+}
+.navbar .navbar-brand img,
+.navbar .logo { max-height: 44px; }
+
+// ---------- encabezados ----------
+#region-main h1,
+#region-main h2,
+#region-main h3 {
+  color: $sl-azul;
+  letter-spacing: -0.01em;
+}
+
+// ---------- tarjetas ----------
+.card {
+  border: 1px solid rgba(11, 61, 122, 0.10);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(11, 61, 122, 0.08);
+}
+#page-header .card {
+  background: linear-gradient(135deg, #ffffff 0%, #e8f0fa 100%);
+  border-left: 6px solid $sl-oro;
+}
+.course-card,
+.dashboard-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.course-card:hover,
+.dashboard-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(11, 61, 122, 0.18);
+}
+
+// ---------- portada del sitio ----------
+#page-site-index #page-header .card {
+  background: linear-gradient(135deg, $sl-azul 0%, $sl-azul-claro 100%);
+  border-left: 0;
+  border-bottom: 6px solid $sl-oro;
+  color: #ffffff;
+}
+#page-site-index #page-header .card h1,
+#page-site-index #page-header .card h2,
+#page-site-index #page-header .card a,
+#page-site-index #page-header .card .no-overflow,
+#page-site-index #page-header .card p {
+  color: #ffffff;
+}
+
+// ---------- curso ----------
+.course-content .course-section,
+.course-content li.section {
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(11, 61, 122, 0.07);
+}
+.course-content .sectionname,
+.course-content .sectionname a {
+  color: $sl-azul;
+  font-weight: 700;
+}
+.activity-item {
+  border-radius: 12px;
+  transition: background-color 0.15s ease;
+}
+.activity-item:hover { background-color: #eef4fb; }
+
+// ---------- botones ----------
+.btn {
+  border-radius: 999px;
+  font-weight: 600;
+}
+.btn-primary {
+  padding: 0.5rem 1.5rem;
+  box-shadow: 0 4px 10px rgba(11, 61, 122, 0.25);
+}
+.btn-primary:hover { transform: translateY(-1px); }
+
+// ---------- cuestionarios ----------
+.que {
+  border-radius: 14px;
+  box-shadow: 0 3px 10px rgba(11, 61, 122, 0.08);
+}
+
+// ---------- inicio de sesión ----------
+body.pagelayout-login,
+#page-login-index {
+  background: linear-gradient(135deg, $sl-azul 0%, $sl-azul-claro 60%, $sl-oro 160%) fixed !important;
+}
+#page-login-index .login-container,
+#page-login-index .card,
+.pagelayout-login .card {
+  border-radius: 22px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  border: 0;
+}
+.login-logo img,
+.login-heading img { max-height: 96px; }
+
+// ---------- pie de página ----------
+#page-footer {
+  background: $sl-azul;
+  color: #dbe7f5;
+  border-top: 4px solid $sl-oro;
+  margin-top: 2rem;
+}
+#page-footer a { color: $sl-oro; }
