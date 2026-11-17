@@ -302,9 +302,82 @@ li.course-section {
 }
 .que .answer > div:hover { border-color: $azul2; background-color: $cielo; }
 
+// ---------- área personal y mis cursos ----------
+#page-my-index #region-main::before,
+#page-my-courses #region-main::before {
+  content: "¡Hola! Este es tu espacio para aprender\A Aquí ves tus cursos, tus tareas y las fechas importantes";
+  white-space: pre-line;
+  display: block;
+  margin-bottom: 1.75rem;
+  padding: 2.25rem 8rem 2.25rem 2rem;
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #ffffff;
+  border-radius: 16px;
+  border-bottom: 6px solid $oro;
+  background:
+    $escudo right 2rem center / 4.5rem no-repeat,
+    linear-gradient(120deg, $azul 0%, $azul2 100%);
+}
+.course-card {
+  border-radius: 18px;
+  overflow: hidden;
+}
+.course-card .card-img-top {
+  height: 8.5rem;
+  border-bottom: 5px solid $oro;
+  background:
+    $escudo right 1rem center / 3.5rem no-repeat,
+    linear-gradient(135deg, $azul 0%, $azul2 100%) !important;
+}
+.card-grid > .col:nth-child(4n+2) .course-card .card-img-top {
+  background:
+    $escudo right 1rem center / 3.5rem no-repeat,
+    linear-gradient(135deg, #0f6b6b 0%, #1f9d8f 100%) !important;
+}
+.card-grid > .col:nth-child(4n+3) .course-card .card-img-top {
+  background:
+    $escudo right 1rem center / 3.5rem no-repeat,
+    linear-gradient(135deg, #5b3a9b 0%, #7e57c2 100%) !important;
+}
+.card-grid > .col:nth-child(4n+4) .course-card .card-img-top {
+  background:
+    $escudo right 1rem center / 3.5rem no-repeat,
+    linear-gradient(135deg, #b4560a 0%, #e08a1e 100%) !important;
+}
+.course-card .coursename {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: $azul;
+  text-decoration: none;
+}
+.block .card-title,
+.block .card-header h3,
+.block_timeline h3 {
+  position: relative;
+  padding-bottom: 0.6rem;
+  color: $azul;
+  font-weight: 800;
+}
+.block .card-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 2.5rem;
+  height: 4px;
+  border-radius: 4px;
+  background: $oro;
+}
+.calendartable td.today { background-color: $cielo; }
+.badge { border-radius: 999px; }
+
 // ---------- pantallas pequeñas ----------
 @media (max-width: 36rem) {
-  #page-site-index #region-main::before {
+  #page-site-index #region-main::before,
+  #page-my-index #region-main::before,
+  #page-my-courses #region-main::before {
     padding: 1.5rem 1.25rem;
     font-size: 1.25rem;
     background: linear-gradient(120deg, $azul 0%, $azul2 100%);
