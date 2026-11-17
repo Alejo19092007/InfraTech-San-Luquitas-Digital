@@ -84,3 +84,10 @@ bash scripts/aplicar-tema-moodle.sh           # aplica el tema
 bash scripts/aplicar-tema-moodle.sh --quitar  # vuelve al tema original
 ```
 Luego se recarga el navegador con Ctrl+F5. En una instalación nueva, `crear-eva.php` lo aplica solo.
+
+### Cursos de ejemplo adicionales
+
+```bash
+bash scripts/crear-cursos-extra.sh
+```
+Crea cuatro cursos más (lectura, matemáticas, ciencias e inglés) con presentación, foro, páginas y una tarea, y matricula a la docente y a los tres estudiantes. Se puede repetir sin duplicar.
